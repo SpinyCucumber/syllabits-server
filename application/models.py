@@ -10,7 +10,7 @@ class Collection(Document):
 class PoemLine(EmbeddedDocument):
     text = StringField()
     key = StringField()
-    stanza_break = BooleanField()
+    stanza_break = BooleanField(default=False)
 
 class Poem(Document):
     meta = {"collection": "poem"}
