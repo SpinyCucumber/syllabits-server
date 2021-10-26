@@ -18,6 +18,9 @@ Types/Queries
 class PoemLine(MongoengineObjectType):
     class Meta:
         model = PoemLineModel
+        # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
+        # See https://github.com/graphql-python/graphene-mongo/issues/162
+        interfaces = (Node,)
 
 class Poem(MongoengineObjectType):
     class Meta:
@@ -39,6 +42,7 @@ class User(MongoengineObjectType):
 class ProgressLine(MongoengineObjectType):
     class Meta:
         model = ProgressLineModel
+        interfaces = (Node,)
 
 class Progress(MongoengineObjectType):
     class Meta:
