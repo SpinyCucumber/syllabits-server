@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_graphql import GraphQLView
 
 def create_app():
 
@@ -10,7 +11,11 @@ def create_app():
         from . import configs
         from .config_loader import load_config
         load_config(app.config)
-        # TODO Construct GraphQL
-        pass
+
+        # Construct GraphQL
+        from .schema import schema
+        app.add_url_rule(
+            "/graphql", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=True)
+        )
     
     return app
