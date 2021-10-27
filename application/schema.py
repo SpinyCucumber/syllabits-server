@@ -61,8 +61,12 @@ class RandomPoem(Mutation):
     poem = Field(Poem)
     
     def mutate(root, info):
-        # TODO
-        pass
+        # Retrieve one random poem using the Mongo pipeline
+        pipeline = [{ '$sample': { 'size': 1 } }]
+        poem_data = PoemModel.objects().aggregate(pipeline).next()
+        # Convert raw data to a Poem object to automatically dereference things
+        poem_obj = PoemModel._from_son(poem_data)
+        return RandomPoem(poem=poem_obj)
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
@@ -73,12 +77,21 @@ class SubmitLine(Mutation):
     class Arguments:
         input = SubmitLineInput(required=True)
 
-    correct = Boolean()
-    hints = List(Int)
+    conflicts = List(Int)
 
     def mutate(root, info, input):
-        # TODO
-        pass
+        # TODO Update user progress if user is currently logged in
+        # Look up poem using Poem ID and index line
+        poem = Node.get_node_from_global_id(info, input.poemID)
+        line = poem.lines[input.lineNum]
+        # Compare the blocks one-by-one: if there is a mismatch, record the index.
+        conflicts = []
+        length = min(len(line.key), len(input.answer))
+        for i in range(length):
+            if (line.key[i] != input.answer[i]):
+                conflicts.append(i)
+        # Construct response
+        return SubmitLine(conflicts=conflicts)
 
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
