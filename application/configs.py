@@ -7,7 +7,9 @@ class BaseConfig:
 @for_mode('development')
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
+    ENABLE_GRAPHIQL = True
 
 @for_mode('production')
 class ProductionConfig(BaseConfig):
     DEBUG = False
+    ENABLE_GRAPHIQL = False
