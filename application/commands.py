@@ -4,7 +4,7 @@ from flask import current_app
 from .models import Collection, Poem
 
 @current_app.cli.command('import-collection')
-@click.argument('path')
+@click.argument('path', type=click.Path(exists=True))
 @click.argument('title')
 def import_collection(path, title):
 
