@@ -14,5 +14,6 @@ def load_config(config):
     # Mode is specified by environment variable
     mode = os.environ.get(VAR_MODE)
     if not mode:
-        raise RuntimeError(f'{VAR_MODE} not set!')
+        print(f'{VAR_MODE} not set! Defaulting to \'development\'')
+        mode = 'development'
     config.from_object(modeToConfig[mode])
