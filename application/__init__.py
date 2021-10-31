@@ -17,6 +17,9 @@ def create_app():
         from .config_loader import load_config
         load_config(app.config)
 
+        # Set up commands
+        from . import commands
+
         # Connect to DB
         connect(db=app.config['MONGO_DB'], host=app.config['MONGO_URI'])
 
