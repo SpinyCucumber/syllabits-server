@@ -19,7 +19,7 @@ def import_collection(path, title):
         poems = []
         for poem_data in data:
             # Create new poem and link to collection/other poems
-            poem = Poem.from_json(poem_data, created=True)
+            poem = Poem._from_son(poem_data, created=True)
             poem.collection = collection
             poem.index = index
             if (prev_poem):
