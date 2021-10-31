@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_graphql import GraphQLView
+from flask_cors import CORS
 from mongoengine import connect
 
 def create_app():
@@ -7,6 +8,9 @@ def create_app():
     app = Flask(__name__)
     # Enter app context (necessary for creating views and such)
     with app.app_context():
+
+        # Apply CORS
+        CORS(app)
 
         # Initialize configs and load the appropriate one
         from . import configs

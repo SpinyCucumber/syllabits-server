@@ -11,3 +11,4 @@ class DevelopmentConfig(BaseConfig):
 @for_mode('production')
 class ProductionConfig(BaseConfig):
     DEBUG = False
+    CORS_ORIGINS = 'api.syllabits.betatesting.as.ua.edu'
