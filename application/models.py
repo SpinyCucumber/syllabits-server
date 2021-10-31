@@ -1,5 +1,5 @@
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import (EmailField, EmbeddedDocumentListField, StringField, BooleanField, ReferenceField)
+from mongoengine.fields import (EmailField, EmbeddedDocumentListField, StringField, BooleanField, ReferenceField, IntField)
 
 # Could create a field that wraps string field for block sequences
 
@@ -16,6 +16,7 @@ class Poem(Document):
     meta = {"collection": "poem"}
     next = ReferenceField('self', required=False)
     prev = ReferenceField('self', required=False)
+    index = IntField(required=False)
     collection = ReferenceField(Collection, required=False)
     title = StringField()
     author = StringField()
