@@ -7,8 +7,10 @@ class BaseConfig:
 @for_mode('development')
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
+    ENABLE_GRAPHIQL = True
 
 @for_mode('production')
 class ProductionConfig(BaseConfig):
     DEBUG = False
     CORS_ORIGINS = 'https://syllabits.betatesting.as.ua.edu'
+    ENABLE_GRAPHIQL = False
