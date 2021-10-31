@@ -12,5 +12,5 @@ class DevelopmentConfig(BaseConfig):
 @for_mode('production')
 class ProductionConfig(BaseConfig):
     DEBUG = False
-    CORS_ORIGINS = 'https://syllabits.betatesting.as.ua.edu'
     ENABLE_GRAPHIQL = False
+    CORS_ORIGINS = 'https://syllabits.betatesting.as.ua.edu'
