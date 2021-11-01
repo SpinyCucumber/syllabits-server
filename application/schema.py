@@ -42,7 +42,9 @@ class Collection(MongoengineObjectType):
         model = CollectionModel
         interfaces = (Node,)
     poems = MongoengineConnectionField(Poem)
-    # TODO Resolver
+    # Returns all poems in this collection
+    def resolve_poems(parent, info):
+        return PoemModel.objects(collection=parent)
 
 class User(MongoengineObjectType):
     class Meta:

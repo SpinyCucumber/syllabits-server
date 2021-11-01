@@ -4,7 +4,7 @@ from mongoengine.fields import (EmailField, EmbeddedDocumentListField, StringFie
 # Could create a field that wraps string field for block sequences
 
 class Collection(Document):
-    meta = {"collection": "collection"}
+    meta = {'collection': 'collection'}
     title = StringField()
 
 class PoemLine(EmbeddedDocument):
@@ -13,7 +13,7 @@ class PoemLine(EmbeddedDocument):
     stanza_break = BooleanField(default=False)
 
 class Poem(Document):
-    meta = {"collection": "poem"}
+    meta = {'collection': 'poem', 'indexes': ['collection']}
     next = ReferenceField('self', required=False)
     prev = ReferenceField('self', required=False)
     index = IntField(required=False)
@@ -23,7 +23,7 @@ class Poem(Document):
     lines = EmbeddedDocumentListField(PoemLine)
 
 class User(Document):
-    meta = {"collection": "user"}
+    meta = {'collection': 'user'}
     email = EmailField()
     password_hash = StringField()
 
@@ -31,7 +31,7 @@ class ProgressLine(EmbeddedDocument):
     answer = StringField()
 
 class Progress(Document):
-    meta = {"collection": "progress"}
+    meta = {'collection': 'progress'}
     user = ReferenceField(User)
     poem = ReferenceField(Poem)
     lines = EmbeddedDocumentListField(ProgressLine)

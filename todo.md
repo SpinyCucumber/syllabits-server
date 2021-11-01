@@ -1,5 +1,5 @@
-- [ ] Import Command
+- [x] Import Command
     - See https://flask.palletsprojects.com/en/2.0.x/cli/#custom-commands
 - [ ] README (more info)
-- [ ] Mutation logic
+- [x] Mutation logic
 - [ ] Login/Register mutations
