@@ -44,7 +44,7 @@ class Collection(MongoengineObjectType):
     poems = MongoengineConnectionField(Poem)
     # Returns all poems in this collection
     def resolve_poems(parent, info):
-        return PoemModel.objects(collection=parent)
+        return PoemModel.objects(collection=parent).order_by('index')
 
 class User(MongoengineObjectType):
     class Meta:
