@@ -1,6 +1,6 @@
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Boolean, List)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List)
 
 from .models import (
     Collection as CollectionModel,
@@ -21,11 +21,21 @@ class PoemLine(MongoengineObjectType):
         # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
         # See https://github.com/graphql-python/graphene-mongo/issues/162
         interfaces = (Node,)
+    number = Int()
 
 class Poem(MongoengineObjectType):
     class Meta:
         model = PoemModel
         interfaces = (Node,)
+        exclude_fields = ('lines',)
+    # Define a custom resolver for the 'lines' field so that we can attach
+    # line numbers dynamically
+    lines = List(PoemLine)
+    def resolve_lines(parent, info):
+        lines = parent.lines
+        for i in range(len(lines)):
+            lines[i].number = i
+        return lines
 
 class Collection(MongoengineObjectType):
     class Meta:
