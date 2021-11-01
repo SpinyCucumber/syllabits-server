@@ -26,7 +26,7 @@ def create_app():
         # Construct GraphQL
         from .schema import schema
         app.add_url_rule(
-            "/graphql", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=app.config["ENABLE_GRAPHIQL"])
+            "/", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=app.config["ENABLE_GRAPHIQL"])
         )
     
     return app
