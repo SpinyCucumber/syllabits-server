@@ -3,10 +3,10 @@ import json
 from flask import current_app
 from .models import Collection, Poem
 
-@current_app.cli.command('import-collection')
+@current_app.cli.command('importcollection')
 @click.argument('path', type=click.Path(exists=True))
 @click.argument('title')
-def importcollection(path, title):
+def import_collection(path, title):
     click.echo(f'Importing collection \'{path}\'...')
 
     with open(path) as file:
