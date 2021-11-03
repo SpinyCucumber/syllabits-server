@@ -1,6 +1,7 @@
+from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
 
 from .models import (
     Collection as CollectionModel,
@@ -116,6 +117,7 @@ class Login(Mutation):
         input = LoginInput(required=True)
     
     token = String()
+    ok = Boolean()
 
     def mutate(root, info, input):
         # TODO
@@ -124,11 +126,16 @@ class Login(Mutation):
 class RegisterInput(LoginInput):
     pass
 
+class RegisterError(Enum):
+    USER_EXISTS = 'USER_EXISTS'
+
 class Register(Mutation):
     class Arguments:
         input = RegisterInput(required=True)
     
-    token = String()
+    result = String()
+    ok = Boolean()
+    error = Field(RegisterError)
 
     def mutate(root, info, input):
         # Create new user and save
@@ -136,7 +143,7 @@ class Register(Mutation):
         user = UserModel(email = input.email, password_hashed = password_hashed)
         user.save()
         # TODO Create new token
-        return Register(token=None)
+        return Register(result=None)
 
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
