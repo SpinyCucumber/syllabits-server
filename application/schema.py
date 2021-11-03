@@ -3,6 +3,7 @@ from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
 from flask_jwt_extended import create_access_token
+from mongoengine.errors import NotUniqueError
 
 from .models import (
     Collection as CollectionModel,
@@ -139,14 +140,19 @@ class Register(Mutation):
     error = Field(RegisterError)
 
     def mutate(root, info, input):
-        # Create new user and save
-        # TODO Ensure unique
-        password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
-        user = UserModel(email=input.email, is_admin=False, password_hashed=password_hashed)
-        user.save()
-        # Create new token
-        token = create_access_token(identity=user.id, additional_claims={'admin': user.is_admin})
-        return Register(result=token)
+        # Create new user with email and attempt to save
+        # Save before hashing password as hashing is expensive
+        user = UserModel(email=input.email)
+        try:
+            user.save()
+            password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
+            user.password_hashed = password_hashed
+            user.save()
+            # Create new token
+            token = create_access_token(identity=user.id, additional_claims={'admin': user.is_admin})
+            return Register(ok=True, result=token)
+        except NotUniqueError:
+            return Register(ok=False, error=RegisterError.USER_EXISTS)
 
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
