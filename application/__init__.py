@@ -3,6 +3,8 @@ from flask_graphql import GraphQLView
 from mongoengine import connect
 import os
 
+VAR_SECRET_KEY = 'SYLLABITS_SECRET_KEY'
+
 def create_app():
 
     app = Flask(__name__)
@@ -19,7 +21,11 @@ def create_app():
         load_config(app.config)
 
         # Load secret key
-        app.config['JWT_SECRET_KEY'] = os.environ.get('SYLLABITS_SECRET_KEY')
+        secret_key = os.environ.get(VAR_SECRET_KEY)
+
+        if not secret_key:
+            print(f'{VAR_SECRET_KEY} must be set!')
+            return None
 
         # Set up commands
         from . import commands
