@@ -23,7 +23,7 @@ class Poem(Document):
     lines = EmbeddedDocumentListField(PoemLine)
 
 class User(Document):
-    meta = {'collection': 'user'}
+    meta = {'collection': 'user', 'indexes': ['email']}
     email = EmailField()
     password_hashed = StringField()
 
