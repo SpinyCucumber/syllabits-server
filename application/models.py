@@ -25,7 +25,7 @@ class Poem(Document):
 class User(Document):
     meta = {'collection': 'user'}
     email = EmailField()
-    password_hash = StringField()
+    password_hashed = StringField()
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()

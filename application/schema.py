@@ -11,6 +11,8 @@ from .models import (
     ProgressLine as ProgressLineModel
 )
 
+from .extensions import bcrypt
+
 """
 Types/Queries
 """
@@ -129,7 +131,11 @@ class Register(Mutation):
     token = String()
 
     def mutate(root, info, input):
-        # TODO
+        # Create new user and save
+        password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
+        user = UserModel(email = input.email, password_hashed = password_hashed)
+        user.save()
+        # TODO Create new token
         return Register(token=None)
 
 class Mutation(ObjectType):
