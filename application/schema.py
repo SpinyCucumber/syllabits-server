@@ -105,9 +105,38 @@ class SubmitLine(Mutation):
         # Construct response
         return SubmitLine(conflicts=conflicts)
 
+class LoginInput(InputObjectType):
+    email = String()
+    password = String()
+
+class Login(Mutation):
+    class Arguments:
+        input = LoginInput(required=True)
+    
+    token = String()
+
+    def mutate(root, info, input):
+        # TODO
+        return Login(token=None)
+
+class RegisterInput(LoginInput):
+    pass
+
+class Register(Mutation):
+    class Arguments:
+        input = RegisterInput(required=True)
+    
+    token = String()
+
+    def mutate(root, info, input):
+        # TODO
+        return Register(token=None)
+
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
     submit_line = SubmitLine.Field()
+    login = Login.Field()
+    register = Register.Field()
 
 """
 Schema
