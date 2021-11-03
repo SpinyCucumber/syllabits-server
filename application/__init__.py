@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_graphql import GraphQLView
 from mongoengine import connect
+import os
 
 def create_app():
 
@@ -16,6 +17,9 @@ def create_app():
         from . import configs
         from .config_loader import load_config
         load_config(app.config)
+
+        # Load secret key
+        app.config['JWT_SECRET_KEY'] = os.environ.get('SYLLABITS_SECRET_KEY')
 
         # Set up commands
         from . import commands
