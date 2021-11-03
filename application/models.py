@@ -1,3 +1,4 @@
+from enum import unique
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (EmailField, EmbeddedDocumentListField, StringField, BooleanField, ReferenceField, IntField)
 
@@ -24,7 +25,7 @@ class Poem(Document):
 
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
-    email = EmailField()
+    email = EmailField(unique=True)
     is_admin = BooleanField()
     password_hashed = StringField()
 
