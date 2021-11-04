@@ -5,7 +5,7 @@ from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int,
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 
-from .models import (
+from ..models import (
     Collection as CollectionModel,
     PoemLine as PoemLineModel,
     Poem as PoemModel,
@@ -14,7 +14,7 @@ from .models import (
     ProgressLine as ProgressLineModel
 )
 
-from .extensions import bcrypt
+from ..extensions import bcrypt
 
 """
 Types/Queries
@@ -50,11 +50,6 @@ class Collection(MongoengineObjectType):
     # Returns all poems in this collection
     def resolve_poems(parent, info):
         return PoemModel.objects(collection=parent).order_by('index')
-
-class User(MongoengineObjectType):
-    class Meta:
-        model = UserModel
-        interfaces = (Node,)
 
 class ProgressLine(MongoengineObjectType):
     class Meta:
@@ -164,4 +159,4 @@ class Mutation(ObjectType):
 Schema
 """
 
-schema = Schema(query=Query, mutation=Mutation, types=[Poem, PoemLine, Collection, User, Progress, ProgressLine])
+schema = Schema(query=Query, mutation=Mutation)
