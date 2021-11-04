@@ -76,11 +76,15 @@ class SubmitLineInput(InputObjectType):
     lineNum = Int()
     answer = String()
 
+# Indicates which part of a line answer are correct/incorrect
+class LineFeedback(ObjectType):
+    conflicts = List(Int)
+
 class SubmitLine(Mutation):
     class Arguments:
         input = SubmitLineInput(required=True)
 
-    conflicts = List(Int)
+    feedback = Field(LineFeedback)
 
     def mutate(root, info, input):
         # Look up poem using Poem ID and index line
@@ -93,7 +97,7 @@ class SubmitLine(Mutation):
             if (line.key[i] != input.answer[i]):
                 conflicts.append(i)
         # Construct response
-        return SubmitLine(conflicts=conflicts)
+        return SubmitLine(feedback={'conflicts': conflicts})
 
 class LoginInput(InputObjectType):
     email = String()

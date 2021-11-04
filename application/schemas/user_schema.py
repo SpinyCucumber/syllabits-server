@@ -20,8 +20,9 @@ class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
 
+# This mutation overrides the base SubmitLine mutation
+# to save the user's progress before checking the actual line.
 class UserSubmitLine(SubmitLine):
-    # Override
     def mutate(root, info, input):
         # Update user progress
         poem = Node.get_node_from_global_id(info, input.poemID)
