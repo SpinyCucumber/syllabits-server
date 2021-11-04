@@ -27,10 +27,6 @@ def create_app():
             return None
         app.config['JWT_SECRET_KEY'] = secret_key
 
-        # Set JSON encoder
-        from .mongoengine_jsonencoder import MongoEngineJSONEncoder
-        app.json_encoder = MongoEngineJSONEncoder
-
         # Set up commands
         from . import commands
 
