@@ -30,14 +30,22 @@ class ProgressLine(MongoengineObjectType):
         interfaces = (Node,)
     # Whenever we send the progress, we also include feedback for the current answer
     feedback = Field(LineFeedback)
-    # TODO
+    # Also have to include number
+    number = Int()
 
 class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
         exclude_fields = ('lines',)
     lines = List(ProgressLine)
-
+    # The lines of the poem document are actually a dictionary, with the keys
+    # being strings that correspond to the line indicies. We convert into an array
+    def resolve_lines(parent, info):
+        def map(key, line):
+            line.number = int(key)
+            # TODO Attach feedback
+            return line
+        return [ map(*entry) for entry in parent.lines.items() ]
 
 class PoemLine(MongoengineObjectType):
     class Meta:
@@ -65,8 +73,6 @@ class Poem(MongoengineObjectType):
     def resolve_progress(parent, info):
         # Look up progress using poem and user
         if (info.context['user']):
-            # DEBUG
-            print('in resolve_progress')
             return ProgressModel.objects(user=info.context['user'], poem=parent).first()
 
 class Collection(MongoengineObjectType):
@@ -113,7 +119,7 @@ class SubmitLine(Mutation):
         # Lookup poem and line
         poem = Node.get_node_from_global_id(info, input.poemID)
         line = poem.lines[input.lineNum]
-        # If there the user is logged in, update their progress
+        # If the user is logged in, update their progress
         if (info.context['user']):
             # Update user progress
             query = ProgressModel.objects(user=info.context['user'], poem=poem)
