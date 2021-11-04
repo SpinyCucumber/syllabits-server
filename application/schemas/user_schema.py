@@ -3,13 +3,22 @@ from graphene_mongo import MongoengineObjectType
 from graphene.relay import Node
 from graphene import (ObjectType, Schema, Mutation)
 
-from ..models import User as UserModel, Progress as ProgressModel
+from ..models import User as UserModel, Progress as ProgressModel, ProgressLine as ProgressLineModel
 from .base_schema import SubmitLine, Query as BaseQuery, Mutation as BaseMutation
 
 class User(MongoengineObjectType):
     class Meta:
         model = UserModel
         interfaces = (Node,)
+
+class ProgressLine(MongoengineObjectType):
+    class Meta:
+        model = ProgressLineModel
+        interfaces = (Node,)
+
+class Progress(MongoengineObjectType):
+    class Meta:
+        model = ProgressModel
 
 class UserSubmitLine(SubmitLine):
     # Override

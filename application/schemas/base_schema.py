@@ -51,15 +51,6 @@ class Collection(MongoengineObjectType):
     def resolve_poems(parent, info):
         return PoemModel.objects(collection=parent).order_by('index')
 
-class ProgressLine(MongoengineObjectType):
-    class Meta:
-        model = ProgressLineModel
-        interfaces = (Node,)
-
-class Progress(MongoengineObjectType):
-    class Meta:
-        model = ProgressModel
-
 class Query(ObjectType):
     node = Node.Field()
     all_collections = MongoengineConnectionField(Collection)
