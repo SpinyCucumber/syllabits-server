@@ -4,14 +4,14 @@ from graphene.relay import Node
 from graphene import (ObjectType, Schema)
 
 from ..models import User as UserModel
-from .base_schema import SubmitLine as BaseSubmitLine, Query as BaseQuery, Mutation as BaseMutation
+from .base_schema import SubmitLine as SubmitLine, Query as BaseQuery, Mutation as BaseMutation
 
 class User(MongoengineObjectType):
     class Meta:
         model = UserModel
         interfaces = (Node,)
 
-class SubmitLine(BaseSubmitLine):
+class UserSubmitLine(SubmitLine):
     # Override
     def mutate(root, info, input):
         # TODO Update user progress
@@ -22,6 +22,6 @@ class SubmitLine(BaseSubmitLine):
 # Inherit from base mutation set
 class Mutation(BaseMutation, ObjectType):
     # Override
-    submitLine = SubmitLine.Field()
+    submitLine = UserSubmitLine.Field()
 
 schema = Schema(query=BaseQuery, mutation=Mutation)

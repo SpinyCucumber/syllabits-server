@@ -33,10 +33,7 @@ def create_app():
         # Connect to DB
         connect(db=app.config['MONGO_DB'], host=app.config['MONGO_URI'])
 
-        # Construct GraphQL
-        from .schema import schema
-        app.add_url_rule(
-            "/", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=app.config["ENABLE_GRAPHIQL"])
-        )
+        # Construct views
+        from . import views
     
     return app
