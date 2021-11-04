@@ -17,13 +17,6 @@ from ..models import (
 from ..extensions import bcrypt
 
 """
-Utility
-"""
-
-def create_token_for_user(user):
-    return create_access_token(identity=str(user.id), additional_claims={'is_admin': user.is_admin})
-
-"""
 Types/Queries
 """
 
@@ -128,7 +121,8 @@ class Login(Mutation):
         try:
             user = UserModel.objects(email=input.email).get()
             if bcrypt.check_password_hash(user.password_hashed, input.password):
-                return Login(ok=True, result=create_token_for_user(user))
+                token = create_access_token(user, additional_claims={'is_admin': user.is_admin})
+                return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
         except UserModel.DoesNotExist:
@@ -158,7 +152,8 @@ class Register(Mutation):
             user.password_hashed = password_hashed
             user.save()
             # Create new token
-            return Register(ok=True, result=create_token_for_user(user))
+            token = create_access_token(user, additional_claims={'is_admin': user.is_admin})
+            return Register(ok=True, result=token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
 
