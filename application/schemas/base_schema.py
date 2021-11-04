@@ -113,12 +113,21 @@ class Login(Mutation):
     class Arguments:
         input = LoginInput(required=True)
     
-    token = String()
+    result = String()
     ok = Boolean()
 
     def mutate(root, info, input):
-        # TODO
-        return Login(token=None)
+        # Attempt to find user and check if hashed passwords match
+        try:
+            user = UserModel.objects(email=input.email).get()
+            if bcrypt.check_password_hash(user.password_hashed, input.password):
+                # Create token
+                token = create_access_token(identity=user.id, additional_claims={'admin': user.is_admin})
+                return Login(ok=True, result=token)
+            else:
+                return Login(ok=False)
+        except UserModel.DoesNotExist:
+            return Login(ok=False)
 
 class RegisterInput(LoginInput):
     pass
