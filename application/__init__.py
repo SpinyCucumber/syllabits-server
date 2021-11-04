@@ -22,10 +22,10 @@ def create_app():
 
         # Load secret key
         secret_key = os.environ.get(VAR_SECRET_KEY)
-
         if not secret_key:
             print(f'{VAR_SECRET_KEY} must be set!')
             return None
+        app.config['JWT_SECRET_KEY'] = secret_key
 
         # Set up commands
         from . import commands
