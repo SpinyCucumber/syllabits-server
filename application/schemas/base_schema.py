@@ -92,7 +92,6 @@ class SubmitLine(Mutation):
     conflicts = List(Int)
 
     def mutate(root, info, input):
-        # TODO Update user progress if user is currently logged in
         # Look up poem using Poem ID and index line
         poem = Node.get_node_from_global_id(info, input.poemID)
         line = poem.lines[input.lineNum]
