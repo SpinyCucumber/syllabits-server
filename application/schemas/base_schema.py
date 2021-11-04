@@ -20,6 +20,25 @@ from ..extensions import bcrypt
 Types/Queries
 """
 
+# Indicates which part of a line answer are correct/incorrect
+class LineFeedback(ObjectType):
+    conflicts = List(Int)
+
+class ProgressLine(MongoengineObjectType):
+    class Meta:
+        model = ProgressLineModel
+        interfaces = (Node,)
+    # Whenever we send the progress, we also include feedback for the current answer
+    feedback = Field(LineFeedback)
+    # TODO
+
+class Progress(MongoengineObjectType):
+    class Meta:
+        model = ProgressModel
+        exclude_fields = ('lines',)
+    lines = List(ProgressLine)
+
+
 class PoemLine(MongoengineObjectType):
     class Meta:
         model = PoemLineModel
@@ -33,6 +52,7 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         exclude_fields = ('lines',)
+    progress = Field(Progress)
     # Define a custom resolver for the 'lines' field so that we can attach
     # line numbers dynamically
     lines = List(PoemLine)
@@ -41,6 +61,13 @@ class Poem(MongoengineObjectType):
         for i in range(len(lines)):
             lines[i].number = i
         return lines
+    # Only attach progress if a user is present
+    def resolve_progress(parent, info):
+        # Look up progress using poem and user
+        if (info.context['user']):
+            # DEBUG
+            print('in resolve_progress')
+            return ProgressModel.objects(user=info.context['user'], poem=parent).first()
 
 class Collection(MongoengineObjectType):
     class Meta:
@@ -76,10 +103,6 @@ class SubmitLineInput(InputObjectType):
     lineNum = Int()
     answer = String()
 
-# Indicates which part of a line answer are correct/incorrect
-class LineFeedback(ObjectType):
-    conflicts = List(Int)
-
 class SubmitLine(Mutation):
     class Arguments:
         input = SubmitLineInput(required=True)
@@ -87,9 +110,14 @@ class SubmitLine(Mutation):
     feedback = Field(LineFeedback)
 
     def mutate(root, info, input):
-        # Look up poem using Poem ID and index line
+        # Lookup poem and line
         poem = Node.get_node_from_global_id(info, input.poemID)
         line = poem.lines[input.lineNum]
+        # If there the user is logged in, update their progress
+        if (info.context['user']):
+            # Update user progress
+            query = ProgressModel.objects(user=info.context['user'], poem=poem)
+            query.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}.answer': input.answer}})
         # Compare the blocks one-by-one: if there is a mismatch, record the index.
         conflicts = []
         length = min(len(line.key), len(input.answer))
