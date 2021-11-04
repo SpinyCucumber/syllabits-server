@@ -33,7 +33,7 @@ class ProgressLine(EmbeddedDocument):
     answer = StringField()
 
 class Progress(Document):
-    meta = {'collection': 'progress'}
+    meta = {'collection': 'progress', 'indexes': [('user', 'poem')]}
     user = ReferenceField(User)
     poem = ReferenceField(Poem)
     lines = EmbeddedDocumentListField(ProgressLine)
