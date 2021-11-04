@@ -3,6 +3,8 @@ from .config_loader import for_mode
 class BaseConfig:
     MONGO_DB = 'syllabits'
     MONGO_URI = 'mongodb://127.0.0.1:27017'
+    JWT_TOKEN_LOCATION = 'headers'
+    JWT_HEADER_TYPE = ''
 
 @for_mode('development')
 class DevelopmentConfig(BaseConfig):
