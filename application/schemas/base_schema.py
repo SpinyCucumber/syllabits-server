@@ -17,6 +17,19 @@ from ..models import (
 from ..extensions import bcrypt
 
 """
+Utility
+"""
+
+def create_feedback(line, answer):
+    # Compare the blocks one-by-one: if there is a mismatch, record the index.
+    conflicts = []
+    length = min(len(line.key), len(answer))
+    for i in range(length):
+        if (line.key[i] != answer[i]):
+            conflicts.append(i)
+    return { 'conflicts': conflicts }
+
+"""
 Types/Queries
 """
 
@@ -41,10 +54,12 @@ class Progress(MongoengineObjectType):
     # The lines of the poem document are actually a dictionary, with the keys
     # being strings that correspond to the line indicies. We convert into an array
     def resolve_lines(parent, info):
-        def map(key, line):
-            line.number = int(key)
-            # TODO Attach feedback
-            return line
+        def map(key, value):
+            number = int(key)
+            value.number = number
+            # Look up poem line and attach feedback
+            value.feedback = create_feedback(parent.poem.lines[number], value.answer)
+            return value
         return [ map(*entry) for entry in parent.lines.items() ]
 
 class PoemLine(MongoengineObjectType):
@@ -124,14 +139,8 @@ class SubmitLine(Mutation):
             # Update user progress
             query = ProgressModel.objects(user=info.context['user'], poem=poem)
             query.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}.answer': input.answer}})
-        # Compare the blocks one-by-one: if there is a mismatch, record the index.
-        conflicts = []
-        length = min(len(line.key), len(input.answer))
-        for i in range(length):
-            if (line.key[i] != input.answer[i]):
-                conflicts.append(i)
         # Construct response
-        return SubmitLine(feedback={'conflicts': conflicts})
+        return SubmitLine(feedback=create_feedback(line, input.answer))
 
 class LoginInput(InputObjectType):
     email = String()
