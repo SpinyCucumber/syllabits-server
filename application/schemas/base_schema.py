@@ -158,7 +158,7 @@ class Login(Mutation):
         try:
             user = UserModel.objects(email=input.email).get()
             if bcrypt.check_password_hash(user.password_hashed, input.password):
-                token = create_access_token(user, additional_claims={'is_admin': user.is_admin})
+                token = create_access_token(user)
                 return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
@@ -189,7 +189,7 @@ class Register(Mutation):
             user.password_hashed = password_hashed
             user.save()
             # Create new token
-            token = create_access_token(user, additional_claims={'is_admin': user.is_admin})
+            token = create_access_token(user)
             return Register(ok=True, result=token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
