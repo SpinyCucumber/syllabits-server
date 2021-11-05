@@ -182,7 +182,7 @@ class Register(Mutation):
     def mutate(root, info, input):
         # Create new user with email and attempt to save
         # Save before hashing password as hashing is expensive
-        user = UserModel(email=input.email)
+        user = UserModel(email=input.email, is_admin=False)
         try:
             user.save()
             password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
