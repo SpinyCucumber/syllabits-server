@@ -20,29 +20,23 @@ from ..extensions import bcrypt
 Utility
 """
 
-def create_feedback(line, answer):
+def find_conflicts(key, answer):
     # Compare the blocks one-by-one: if there is a mismatch, record the index.
     conflicts = []
-    length = min(len(line.key), len(answer))
+    length = min(len(key), len(answer))
     for i in range(length):
-        if (line.key[i] != answer[i]):
+        if (key[i] != answer[i]):
             conflicts.append(i)
-    return { 'conflicts': conflicts }
+    return conflicts
 
 """
 Types/Queries
 """
 
-# Indicates which part of a line answer are correct/incorrect
-class LineFeedback(ObjectType):
-    conflicts = List(Int)
-
 class ProgressLine(MongoengineObjectType):
     class Meta:
         model = ProgressLineModel
         interfaces = (Node,)
-    # Whenever we send the progress, we also include feedback for the current answer
-    feedback = Field(LineFeedback)
     # Also have to include number
     number = Int()
 
@@ -52,13 +46,10 @@ class Progress(MongoengineObjectType):
         exclude_fields = ('lines',)
     lines = List(ProgressLine)
     # The lines of the poem document are actually a dictionary, with the keys
-    # being strings that correspond to the line indicies. We convert into an array
+    # being strings that correspond to the line indicies. We must convert into an array
     def resolve_lines(parent, info):
         def map(key, value):
-            number = int(key)
-            value.number = number
-            # Look up poem line and attach feedback
-            value.feedback = create_feedback(parent.poem.lines[number], value.answer)
+            value.number = int(key)
             return value
         return [ map(*entry) for entry in parent.lines.items() ]
 
@@ -130,19 +121,22 @@ class SubmitLine(Mutation):
     class Arguments:
         input = SubmitLineInput(required=True)
 
-    feedback = Field(LineFeedback)
+    conflicts = List(Int)
+    correct = Boolean()
 
     def mutate(root, info, input):
         # Lookup poem and line
         poem = Node.get_node_from_global_id(info, input.poemID)
         line = poem.lines[input.lineNum]
+        # Determine if correct
+        conflicts = find_conflicts(line.key, input.answer)
+        correct = bool(conflicts)
         # If the user is logged in, update their progress
         if (info.context['user']):
-            # Update user progress
             query = ProgressModel.objects(user=info.context['user'], poem=poem)
-            query.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}.answer': input.answer}})
+            query.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}})
         # Construct response
-        return SubmitLine(feedback=create_feedback(line, input.answer))
+        return SubmitLine(conflicts=conflicts, correct=correct)
 
 class LoginInput(InputObjectType):
     email = String()

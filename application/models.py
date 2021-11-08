@@ -31,6 +31,7 @@ class User(Document):
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()
+    correct = BooleanField()
 
 class Progress(Document):
     meta = {'collection': 'progress', 'indexes': [('user', 'poem')]}
