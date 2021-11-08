@@ -68,6 +68,8 @@ class PoemLine(MongoengineObjectType):
         # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
         # See https://github.com/graphql-python/graphene-mongo/issues/162
         interfaces = (Node,)
+        # Be sure to exclude key (we don't want people automatically solving our poems!)
+        exclude_fields = ('key',)
     number = Int()
 
 class Poem(MongoengineObjectType):
