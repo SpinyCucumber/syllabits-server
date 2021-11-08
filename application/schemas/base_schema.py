@@ -43,6 +43,7 @@ class ProgressLine(MongoengineObjectType):
 class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
+        interfaces = (Node,)
         exclude_fields = ('lines',)
     lines = List(ProgressLine)
     # The lines of the poem document are actually a dictionary, with the keys
