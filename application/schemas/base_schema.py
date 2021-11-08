@@ -130,7 +130,7 @@ class SubmitLine(Mutation):
         line = poem.lines[input.lineNum]
         # Determine if correct
         conflicts = find_conflicts(line.key, input.answer)
-        correct = bool(conflicts)
+        correct = (len(conflicts) == 0)
         # If the user is logged in, update their progress
         if (info.context['user']):
             query = ProgressModel.objects(user=info.context['user'], poem=poem)
