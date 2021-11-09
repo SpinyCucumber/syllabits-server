@@ -1,6 +1,6 @@
 from enum import unique
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import (EmailField, EmbeddedDocumentListField, StringField, BooleanField, ReferenceField, IntField)
+from mongoengine.fields import (EmailField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField)
 
 # Could create a field that wraps string field for block sequences
 
@@ -28,6 +28,22 @@ class User(Document):
     email = EmailField(unique=True)
     is_admin = BooleanField()
     password_hashed = StringField()
+    # A user can have multiple relationships with a poem, which can overlap, and have
+    # different rules for transitioning between them.
+    # A user can 'save' poems. This is a simple, general-purpose feature which allows
+    # users to remember poems (that they would like to play, for instance)
+    # When the user starts working on a poem, the poem is moved from saved to in-progress.
+    saved = ListField(ReferenceField(Poem))
+    # A list of the poems the user is currently "working on."
+    # Important to note is that all poems in-progress have an associated Progress document,
+    # but the vice-versa isn't necessarily true. A poem can be completed and not in-progress,
+    # and still have a progress document.
+    # A poem becomes in-progress by initially submitting a line of the poem.
+    in_progress = ListField(ReferenceField(Poem))
+    # A list of poems the user has completed.
+    # A poem becomes completed once all lines are correct. Once completed, a poem is no longer
+    # considered in-progress, but have become in-progress again by resetting the progress.
+    completed = ListField(ReferenceField(Poem))
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()
@@ -38,4 +54,3 @@ class Progress(Document):
     user = ReferenceField(User)
     poem = ReferenceField(Poem)
     lines = EmbeddedDocumentListField(ProgressLine)
-    finished = BooleanField()
