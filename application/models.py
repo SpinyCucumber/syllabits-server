@@ -1,4 +1,3 @@
-from enum import unique
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (EmailField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField)
 
@@ -54,3 +53,4 @@ class Progress(Document):
     user = ReferenceField(User)
     poem = ReferenceField(Poem)
     lines = EmbeddedDocumentListField(ProgressLine)
+    num_correct = IntField()

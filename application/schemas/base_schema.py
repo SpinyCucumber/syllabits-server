@@ -135,10 +135,17 @@ class SubmitLine(Mutation):
         # If the user is logged in, update their progress
         user = info.context['user']
         if (user):
-            progress = ProgressModel.objects(user=user, poem=poem)
-            progress.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}})
-            # Mark poem as in-progress
+            progress_query = ProgressModel.objects(user=user, poem=poem)
+            # Construct update clause
+            update_clause = {'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}}
+            if (correct): update_clause['$inc'] = {'num_correct': 1}
+            # Upsert progress (insert or update)
+            progress = progress_query.upsert_one(__raw__=update_clause)
+            # Determine if poem is complete
+            complete = (progress.num_correct == len(poem.lines))
+            # Mark poem as in-progress and remove from saved (if applicable)
             # TODO
+
             print('in submitline')
             
         # Construct response
