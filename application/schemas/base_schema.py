@@ -133,9 +133,14 @@ class SubmitLine(Mutation):
         conflicts = find_conflicts(line.key, input.answer)
         correct = (len(conflicts) == 0)
         # If the user is logged in, update their progress
-        if (info.context['user']):
-            query = ProgressModel.objects(user=info.context['user'], poem=poem)
-            query.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}})
+        user = info.context['user']
+        if (user):
+            progress = ProgressModel.objects(user=user, poem=poem)
+            progress.upsert_one(__raw__={'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}})
+            # Mark poem as in-progress
+            # TODO
+            print('in submitline')
+            
         # Construct response
         return SubmitLine(conflicts=conflicts, correct=correct)
 
