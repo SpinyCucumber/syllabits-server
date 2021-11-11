@@ -1,7 +1,7 @@
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Float, List, Enum)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 
@@ -45,14 +45,18 @@ class Progress(MongoengineObjectType):
         model = ProgressModel
         interfaces = (Node,)
         exclude_fields = ('lines',)
-    lines = List(ProgressLine)
     # The lines of the poem document are actually a dictionary, with the keys
     # being strings that correspond to the line indicies. We must convert into an array
+    lines = List(ProgressLine)
     def resolve_lines(parent, info):
         def map(key, value):
             value.number = int(key)
             return value
         return [ map(*entry) for entry in parent.lines.items() ]
+    # We also define a 'completion' field that returns a percent complete for convenience
+    completion = Float()
+    def resolve_completion(parent, info):
+        return parent.num_correct / len(parent.poem.lines)
 
 class PoemLine(MongoengineObjectType):
     class Meta:
