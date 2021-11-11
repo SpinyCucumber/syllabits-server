@@ -74,6 +74,8 @@ class Poem(MongoengineObjectType):
         interfaces = (Node,)
         exclude_fields = ('lines',)
     progress = Field(Progress)
+    # Expose number of lines for convenience
+    num_lines = Int()
     # Define a custom resolver for the 'lines' field so that we can attach
     # line numbers dynamically
     lines = List(PoemLine)
@@ -82,6 +84,8 @@ class Poem(MongoengineObjectType):
         for i in range(len(lines)):
             lines[i].number = i
         return lines
+    def resolve_num_lines(parent, info):
+        return len(parent.lines)
     # Only attach progress if a user is present
     def resolve_progress(parent, info):
         # Look up progress using poem and user
