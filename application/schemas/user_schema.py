@@ -1,7 +1,9 @@
 from graphene_mongo import MongoengineConnectionField
-from graphene import (Schema, ObjectType)
+from graphene import (Schema, Mutation, ObjectType, InputObjectType, Boolean)
+from graphene.relay import GlobalID, Node
 
 from .base_schema import Poem, Query as BaseQuery, Mutation as BaseMutation
+from ..models import Progress as ProgressModel
 
 class Query(BaseQuery, ObjectType):
     # Poems that the user has completed
@@ -20,4 +22,25 @@ class Query(BaseQuery, ObjectType):
     def resolve_saved_poems(parent, info):
         return info.context['user'].saved
 
-schema = Schema(query=Query, mutation=BaseMutation)
+"""
+Mutations
+"""
+
+class ResetProgressInput(InputObjectType):
+    poemID = GlobalID()
+
+class ResetProgress(Mutation):
+    class Arguments:
+        input = ResetProgressInput(required=True)
+    ok = Boolean()
+    def mutate(root, info, input):
+        # Lookup poem
+        poem = Node.get_node_from_global_id(info, input.poemID)
+        # Delete the progress associated with the poem and the current user
+        ProgressModel.objects(user=info.context['user'], poem=poem).delete()
+        return ResetProgress(ok=True)
+
+class Mutation(BaseMutation, ObjectType):
+    reset_progress = ResetProgress.Field()
+
+schema = Schema(query=Query, mutation=Mutation)
