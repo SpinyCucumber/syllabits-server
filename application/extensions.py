@@ -21,6 +21,6 @@ def user_lookup_callback(jwt_header, jwt_data):
 
 @jwt.additional_claims_loader
 def additional_claims_callback(user):
-    return { 'is_admin': user.is_admin }
+    return { 'is_admin': user.is_admin, 'email': user.email }
 
 all = [cors, bcrypt, jwt]
