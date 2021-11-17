@@ -43,6 +43,7 @@ def create_app():
             if current_user: return user_schema
             return base_schema
         view = jwt_required(optional=True)(DynamicGraphQLView.as_view(
+            'root',
             get_schema=get_schema,
             get_context=get_context,
             graphiql=app.config["ENABLE_GRAPHIQL"]
