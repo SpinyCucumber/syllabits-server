@@ -212,11 +212,20 @@ class Register(Mutation):
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
 
+# Creates a new access token using the user's refresh token
+class Refresh(Mutation):
+    ok = Boolean()
+    result = String()
+    def mutate(root, info, input):
+        # TODO Write cookie to context and let view handle setting refresh cookie
+        pass
+
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
     submit_line = SubmitLine.Field()
     login = Login.Field()
     register = Register.Field()
+    refresh = Refresh.Field()
 
 """
 Schema
