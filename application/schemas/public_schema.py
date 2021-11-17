@@ -2,7 +2,7 @@ from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Float, List, Enum)
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, verify_jwt_in_request, current_user
 from mongoengine.errors import NotUniqueError
 
 from ..models import (
@@ -89,8 +89,8 @@ class Poem(MongoengineObjectType):
     # Only attach progress if a user is present
     def resolve_progress(parent, info):
         # Look up progress using poem and user
-        if (info.context['user']):
-            return ProgressModel.objects(user=info.context['user'], poem=parent).first()
+        if (current_user):
+            return ProgressModel.objects(user=current_user, poem=parent).first()
 
 class Collection(MongoengineObjectType):
     class Meta:
@@ -141,9 +141,8 @@ class SubmitLine(Mutation):
         conflicts = find_conflicts(line.key, input.answer)
         correct = (len(conflicts) == 0)
         # If the user is logged in, update their progress
-        user = info.context['user']
-        if (user):
-            progress_query = ProgressModel.objects(user=user, poem=poem)
+        if (current_user):
+            progress_query = ProgressModel.objects(user=current_user, poem=poem)
             # Construct update clause and upsert progress (insert or update)
             update_clause = {'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}}
             if (correct): update_clause['$inc'] = {'num_correct': 1}
@@ -153,9 +152,9 @@ class SubmitLine(Mutation):
             # If not, add in_progress
             complete = (progress.num_correct == len(poem.lines))
             if complete:
-                user.update(pull__in_progress=poem, add_to_set__completed=poem)
+                current_user.update(pull__in_progress=poem, add_to_set__completed=poem)
             else:
-                user.update(add_to_set__in_progress=poem)
+                current_user.update(add_to_set__in_progress=poem)
             
         # Construct response
         return SubmitLine(conflicts=conflicts, correct=correct)

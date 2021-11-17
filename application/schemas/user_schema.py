@@ -1,6 +1,7 @@
 from graphene_mongo import MongoengineConnectionField
 from graphene import (Schema, Mutation, ObjectType, InputObjectType, Boolean)
 from graphene.relay import GlobalID, Node
+from flask_jwt_extended import current_user
 
 from .public_schema import Poem, Query as PublicQuery, Mutation as PublicMutation
 from ..models import Progress as ProgressModel
@@ -13,14 +14,15 @@ class Query(PublicQuery, ObjectType):
     # Poems that the user has manually saved
     saved_poems = MongoengineConnectionField(Poem)
 
+    # Could use a root object instead of these fields
     def resolve_completed_poems(parent, info):
-        return info.context['user'].completed
+        return current_user.completed
 
     def resolve_poems_in_progress(parent, info):
-        return info.context['user'].in_progress
+        return current_user.in_progress
     
     def resolve_saved_poems(parent, info):
-        return info.context['user'].saved
+        return current_user.saved
 
 """
 Mutations
