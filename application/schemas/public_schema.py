@@ -176,6 +176,7 @@ class Login(Mutation):
         try:
             user = UserModel.objects(email=input.email).get()
             if bcrypt.check_password_hash(user.password_hashed, input.password):
+                # TODO Set refresh token in cookies
                 token = create_access_token(user)
                 return Login(ok=True, result=token)
             else:
@@ -207,6 +208,7 @@ class Register(Mutation):
             user.password_hashed = password_hashed
             user.save()
             # Create new token
+            # TODO Set refresh token in cookies
             token = create_access_token(user)
             return Register(ok=True, result=token)
         except NotUniqueError:
@@ -217,7 +219,9 @@ class Refresh(Mutation):
     ok = Boolean()
     result = String()
     def mutate(root, info, input):
-        # TODO Write cookie to context and let view handle setting refresh cookie
+        # TODO Use verify_jwt_in_request to check presence of refresh token in cookies
+        # If refresh token is present, create new access token and return it
+        # If not, return not ok
         pass
 
 class Mutation(ObjectType):
