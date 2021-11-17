@@ -2,10 +2,10 @@ from graphene_mongo import MongoengineConnectionField
 from graphene import (Schema, Mutation, ObjectType, InputObjectType, Boolean)
 from graphene.relay import GlobalID, Node
 
-from .base_schema import Poem, Query as BaseQuery, Mutation as BaseMutation
+from .public_schema import Poem, Query as PublicQuery, Mutation as PublicMutation
 from ..models import Progress as ProgressModel
 
-class Query(BaseQuery, ObjectType):
+class Query(PublicQuery, ObjectType):
     # Poems that the user has completed
     completed_poems = MongoengineConnectionField(Poem)
     # Poems that the user are currently working on
@@ -43,7 +43,7 @@ class ResetProgress(Mutation):
         user.update(pull__in_progress=poem, pull__completed=poem)
         return ResetProgress(ok=True)
 
-class Mutation(BaseMutation, ObjectType):
+class Mutation(PublicMutation, ObjectType):
     reset_progress = ResetProgress.Field()
 
 schema = Schema(query=Query, mutation=Mutation)

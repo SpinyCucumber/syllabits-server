@@ -4,7 +4,7 @@ from mongoengine import connect
 import os
 
 from .flask_graphql import DynamicGraphQLView
-from .schemas import base_schema, user_schema
+from .schemas import public_schema, user_schema
 
 VAR_SECRET_KEY = 'SYLLABITS_SECRET_KEY'
 
@@ -41,7 +41,7 @@ def create_app():
             return { 'user': current_user }
         def get_schema():
             if current_user: return user_schema
-            return base_schema
+            return public_schema
         view = jwt_required(optional=True)(DynamicGraphQLView.as_view(
             'root',
             get_schema=get_schema,
