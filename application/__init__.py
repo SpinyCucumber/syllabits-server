@@ -1,7 +1,10 @@
 from flask import Flask
-from flask_graphql import GraphQLView
+from flask_jwt_extended import current_user, jwt_required
 from mongoengine import connect
 import os
+
+from .flask_graphql import DynamicGraphQLView
+from .schemas import base_schema, user_schema
 
 VAR_SECRET_KEY = 'SYLLABITS_SECRET_KEY'
 
@@ -33,7 +36,18 @@ def create_app():
         # Connect to DB
         connect(db=app.config['MONGO_DB'], host=app.config['MONGO_URI'])
 
-        # Construct views
-        from . import views
+        # Construct view and connect to URL
+        def get_context():
+            return { 'user': current_user }
+        def get_schema():
+            if current_user: return user_schema
+            return base_schema
+        view = jwt_required(optional=True)(DynamicGraphQLView.as_view(
+            get_schema=get_schema,
+            get_context=get_context,
+            graphiql=app.config["ENABLE_GRAPHIQL"]
+        ))
+        app.add_url_rule('/', view_func=view)
+
     
     return app
