@@ -179,7 +179,7 @@ class Login(Mutation):
             if bcrypt.check_password_hash(user.password_hashed, input.password):
                 # Create new access token and set refresh token in cookies
                 token = create_access_token(user)
-                # TODO Fix
+                # TODO Pass cookie to response using info context
                 # refresh_token = create_refresh_token(user)
                 # set_refresh_cookies(info.context, refresh_token)
                 return Login(ok=True, result=token)
@@ -213,7 +213,7 @@ class Register(Mutation):
             user.save()
             # Create new access token and set refresh token in cookies
             access_token = create_access_token(user)
-            # TODO Fix
+            # TODO Pass cookie to response using info context
             # refresh_token = create_refresh_token(user)
             # set_refresh_cookies(info.context, refresh_token)
             return Register(ok=True, result=access_token)
