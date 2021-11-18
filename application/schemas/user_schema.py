@@ -37,12 +37,11 @@ class ResetProgress(Mutation):
     ok = Boolean()
     def mutate(root, info, input):
         # Lookup poem and user
-        user = info.context['user']
         poem = Node.get_node_from_global_id(info, input.poemID)
         # Delete the progress associated with the poem and the current user
-        ProgressModel.objects(user=user, poem=poem).delete()
+        ProgressModel.objects(user=current_user, poem=poem).delete()
         # Remove the poem from the user's in-progress and completed poems
-        user.update(pull__in_progress=poem, pull__completed=poem)
+        current_user.update(pull__in_progress=poem, pull__completed=poem)
         return ResetProgress(ok=True)
 
 class Mutation(PublicMutation, ObjectType):
