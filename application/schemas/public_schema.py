@@ -2,7 +2,9 @@ from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Float, List, Enum)
-from flask_jwt_extended import create_access_token, verify_jwt_in_request, current_user
+from flask import current_app as app
+from flask_jwt_extended import create_access_token, create_refresh_token, verify_jwt_in_request, set_refresh_cookies, current_user
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from mongoengine.errors import NotUniqueError
 
 from ..models import (
@@ -175,8 +177,10 @@ class Login(Mutation):
         try:
             user = UserModel.objects(email=input.email).get()
             if bcrypt.check_password_hash(user.password_hashed, input.password):
-                # TODO Set refresh token in cookies
+                # Create new access token and set refresh token in cookies
                 token = create_access_token(user)
+                refresh_token = create_refresh_token(user)
+                set_refresh_cookies(info.context, refresh_token)
                 return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
@@ -206,22 +210,31 @@ class Register(Mutation):
             password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
             user.password_hashed = password_hashed
             user.save()
-            # Create new token
-            # TODO Set refresh token in cookies
-            token = create_access_token(user)
-            return Register(ok=True, result=token)
+            # Create new access token and set refresh token in cookies
+            access_token = create_access_token(user)
+            refresh_token = create_refresh_token(user)
+            set_refresh_cookies(info.context, refresh_token)
+            return Register(ok=True, result=access_token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
 
-# Creates a new access token using the user's refresh token
+"""
+Creates a new access token using the user's refresh token
+"""
 class Refresh(Mutation):
     ok = Boolean()
     result = String()
     def mutate(root, info, input):
-        # TODO Use verify_jwt_in_request to check presence of refresh token in cookies
+        # Use verify_jwt_in_request to check presence of refresh token in cookies
+        # This creates a new "JWT context" which updates the current_user
         # If refresh token is present, create new access token and return it
         # If not, return not ok
-        pass
+        try:
+            verify_jwt_in_request(refresh=True, locations='cookies')
+            token = create_access_token(current_user)
+            return Refresh(ok=True, result=token)
+        except NoAuthorizationError:
+            return Refresh(ok=False)
 
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
