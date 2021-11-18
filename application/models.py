@@ -7,6 +7,11 @@ class Collection(Document):
     meta = {'collection': 'collection'}
     title = StringField()
 
+class Tag(Document):
+    meta = {'collection': 'tag'}
+    name = StringField()
+    references = IntField()
+
 class PoemLine(EmbeddedDocument):
     text = StringField()
     key = StringField()
@@ -14,10 +19,12 @@ class PoemLine(EmbeddedDocument):
 
 class Poem(Document):
     meta = {'collection': 'poem', 'indexes': ['collection']}
+    # Next, prev, index and collection are only present are in a single, ordered collection.
     next = ReferenceField('self', required=False)
     prev = ReferenceField('self', required=False)
     index = IntField(required=False)
     collection = ReferenceField(Collection, required=False)
+    tags = ListField(ReferenceField(Tag))
     title = StringField()
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
