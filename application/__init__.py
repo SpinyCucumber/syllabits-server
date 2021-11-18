@@ -40,9 +40,12 @@ def create_app():
         def get_schema():
             if current_user: return user_schema
             return public_schema
+        def get_root_value():
+            return current_user
         view = jwt_required(optional=True)(DynamicGraphQLView.as_view(
             'root',
             get_schema=get_schema,
+            get_root_value=get_root_value,
             graphiql=app.config["ENABLE_GRAPHIQL"]
         ))
         app.add_url_rule('/', view_func=view)

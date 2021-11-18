@@ -8,21 +8,11 @@ from ..models import Progress as ProgressModel
 
 class Query(PublicQuery, ObjectType):
     # Poems that the user has completed
-    completed_poems = MongoengineConnectionField(Poem)
+    completed = MongoengineConnectionField(Poem)
     # Poems that the user are currently working on
-    poems_in_progress = MongoengineConnectionField(Poem)
+    in_progress = MongoengineConnectionField(Poem)
     # Poems that the user has manually saved
-    saved_poems = MongoengineConnectionField(Poem)
-
-    # Could use a root object instead of these fields
-    def resolve_completed_poems(parent, info):
-        return current_user.completed
-
-    def resolve_poems_in_progress(parent, info):
-        return current_user.in_progress
-    
-    def resolve_saved_poems(parent, info):
-        return current_user.saved
+    saved = MongoengineConnectionField(Poem)
 
 """
 Mutations
