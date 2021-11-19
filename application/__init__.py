@@ -36,19 +36,8 @@ def create_app():
         # Connect to DB
         connect(db=app.config['MONGO_DB'], host=app.config['MONGO_URI'])
 
-        # Construct view and connect to URL
-        def get_schema():
-            if current_user: return user_schema
-            return public_schema
-        def get_root_value():
-            return current_user
-        view = jwt_required(optional=True)(DynamicGraphQLView.as_view(
-            'root',
-            get_schema=get_schema,
-            get_root_value=get_root_value,
-            graphiql=app.config["ENABLE_GRAPHIQL"]
-        ))
-        app.add_url_rule('/', view_func=view)
+        # Construct views
+        from . import views
 
     
     return app
