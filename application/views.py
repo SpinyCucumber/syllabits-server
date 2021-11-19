@@ -20,7 +20,7 @@ graphql = DynamicGraphQLView.as_view(
     graphiql=app.config["ENABLE_GRAPHIQL"]
 )
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @jwt_required(optional=True)
 def handle_request():
     context = {}
