@@ -39,9 +39,6 @@ class DynamicGraphQLView(View):
     def get_root_value(self):
         return self.root_value
 
-    def get_context(self):
-        return request
-
     def get_middleware(self):
         return self.middleware
 
@@ -66,7 +63,7 @@ class DynamicGraphQLView(View):
     format_error = staticmethod(default_format_error)
     encode = staticmethod(json_encode)
 
-    def dispatch_request(self):
+    def dispatch_request(self, context):
         try:
             request_method = request.method.lower()
             data = self.parse_body()
@@ -94,7 +91,7 @@ class DynamicGraphQLView(View):
 
                 # Execute options
                 root=self.get_root_value(),
-                context=self.get_context(),
+                context=context,
                 middleware=self.get_middleware(),
                 **extra_options
             )
