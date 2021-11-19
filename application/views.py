@@ -13,8 +13,7 @@ def get_schema():
 def get_root_value():
     return current_user
 
-graphql = DynamicGraphQLView.as_view(
-    'graphql',
+graphql = DynamicGraphQLView(
     get_schema=get_schema,
     get_root_value=get_root_value,
     graphiql=app.config["ENABLE_GRAPHIQL"]
@@ -24,6 +23,6 @@ graphql = DynamicGraphQLView.as_view(
 @jwt_required(optional=True)
 def handle_request():
     context = {}
-    response = graphql(context)
+    response = graphql.dispatch_request(context)
     # TODO Cookie handling
     return response
