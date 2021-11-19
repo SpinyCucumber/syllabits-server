@@ -180,7 +180,7 @@ class Login(Mutation):
                 # Create new access token and set refresh token in cookies
                 token = create_access_token(user)
                 # Notify executor to create new refresh token
-                info.context['create_refresh'] = True
+                info.context['create_refresh_token'] = True
                 return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
@@ -213,7 +213,7 @@ class Register(Mutation):
             # Create new access token
             access_token = create_access_token(user)
             # Notify executor to create new refresh token
-            info.context['create_refresh'] = True
+            info.context['create_refresh_token'] = True
             return Register(ok=True, result=access_token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
