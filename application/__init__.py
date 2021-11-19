@@ -1,10 +1,6 @@
 from flask import Flask
-from flask_jwt_extended import current_user, jwt_required
 from mongoengine import connect
 import os
-
-from .flask_graphql import DynamicGraphQLView
-from .schemas import public_schema, user_schema
 
 VAR_SECRET_KEY = 'SYLLABITS_SECRET_KEY'
 
@@ -38,6 +34,5 @@ def create_app():
 
         # Construct views
         from . import views
-
     
     return app
