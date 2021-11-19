@@ -179,9 +179,8 @@ class Login(Mutation):
             if bcrypt.check_password_hash(user.password_hashed, input.password):
                 # Create new access token and set refresh token in cookies
                 token = create_access_token(user)
-                # TODO Pass cookie to response using info context
-                # refresh_token = create_refresh_token(user)
-                # set_refresh_cookies(info.context, refresh_token)
+                # Notify executor to create new refresh token
+                info.context['create_refresh'] = True
                 return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
@@ -211,11 +210,10 @@ class Register(Mutation):
             password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
             user.password_hashed = password_hashed
             user.save()
-            # Create new access token and set refresh token in cookies
+            # Create new access token
             access_token = create_access_token(user)
-            # TODO Pass cookie to response using info context
-            # refresh_token = create_refresh_token(user)
-            # set_refresh_cookies(info.context, refresh_token)
+            # Notify executor to create new refresh token
+            info.context['create_refresh'] = True
             return Register(ok=True, result=access_token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
