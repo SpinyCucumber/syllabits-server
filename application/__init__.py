@@ -10,14 +10,15 @@ def create_app():
     # Enter app context (necessary for creating views and such)
     with app.app_context():
 
-        # Initialize extensions
-        from .extensions import all
-        for ext in all: ext.init_app(app)
-
         # Initialize configs and load the appropriate one
+        # Must initialize config before extensions
         from . import configs
         from .config_loader import load_config
         load_config(app.config)
+
+        # Initialize extensions
+        from .extensions import all
+        for ext in all: ext.init_app(app)
 
         # Load secret key
         secret_key = os.environ.get(VAR_SECRET_KEY)
