@@ -1,4 +1,4 @@
-from flask_jwt_extended import current_user, jwt_required, create_refresh_token, set_refresh_cookies
+from flask_jwt_extended import current_user, create_refresh_token, set_refresh_cookies, verify_jwt_in_request
 from flask import current_app as app
 from .schemas import public_schema, user_schema
 from .flask_graphql import DynamicGraphQLView
@@ -11,11 +11,10 @@ class Context:
 
     user = None
     create_refresh_token = False
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+    
+    def verify_identity(refresh=False):
+        locations = 'cookies' if refresh else None
+        verify_jwt_in_request(optional=True, refresh=refresh, locations=locations)
 
 # Construct GraphQL view
 # We choose the schema based on the
@@ -34,13 +33,13 @@ graphql = DynamicGraphQLView(
 )
 
 @app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
-@jwt_required(optional=True)
 def handle_request():
-    context = Context(user=current_user)
+    # Use the access token to discern identity by default
+    context = Context()
+    context.verify_identity()
     response = graphql.dispatch_request(context)
-    # If graphql requested a refresh token to be created,
-    # create a refresh token for the current user and attach it
-    # as a cookie
+    # If a refresh token was requested, create a refresh token
+    # for the current user and attach it as a cookie
     if (context.create_refresh_token):
         token = create_refresh_token(context.user)
         set_refresh_cookies(response, token)

@@ -214,12 +214,12 @@ class Register(Mutation):
             user.password_hashed = password_hashed
             user.save()
             # Create new access token
-            access_token = create_access_token(user)
+            token = create_access_token(user)
             # Update context with new user and request a refresh token
             # to be attached to the response
             info.context.user = user
             info.context.create_refresh_token = True
-            return Register(ok=True, result=access_token)
+            return Register(ok=True, result=token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
 
@@ -229,19 +229,15 @@ Creates a new access token using the user's refresh token
 class Refresh(Mutation):
     ok = Boolean()
     result = String()
-    def mutate(root, info, input):
-        # Use verify_jwt_in_request to check presence of refresh token in cookies
-        # This creates a new "JWT context" which updates the current_user
-        # If refresh token is present, create new access token and return it
-        # If not, return not ok
-        # TODO Could move this logic to the context object, would make more sense
-        # Also current logic is bugged
-        try:
-            verify_jwt_in_request(refresh=True, locations='cookies')
-            token = create_access_token(info.context.user)
+    def mutate(root, info):
+        # Verify identity using refresh token
+        info.context.verify_identity(refresh=True)
+        user = info.context.user
+        # If identity is verified, create new access token
+        if user:
+            token = create_access_token(user)
             return Refresh(ok=True, result=token)
-        except NoAuthorizationError:
-            return Refresh(ok=False)
+        return Refresh(ok=False)
 
 class Mutation(ObjectType):
     random_poem = RandomPoem.Field()
