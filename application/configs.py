@@ -5,6 +5,7 @@ class BaseConfig:
     MONGO_URI = 'mongodb://127.0.0.1:27017'
     JWT_TOKEN_LOCATION = 'headers'
     JWT_HEADER_TYPE = ''
+    CORS_SUPPORTS_CREDENTIALS = True
 
 @for_mode('development')
 class DevelopmentConfig(BaseConfig):
