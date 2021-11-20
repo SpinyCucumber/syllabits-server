@@ -2,8 +2,7 @@ from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Float, List, Enum)
-from flask import current_app as app
-from flask_jwt_extended import create_access_token, create_refresh_token, verify_jwt_in_request, set_refresh_cookies, current_user
+from flask_jwt_extended import create_access_token, verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from mongoengine.errors import NotUniqueError
 
@@ -91,8 +90,9 @@ class Poem(MongoengineObjectType):
     # Only attach progress if a user is present
     def resolve_progress(parent, info):
         # Look up progress using poem and user
-        if (current_user):
-            return ProgressModel.objects(user=current_user, poem=parent).first()
+        user = info.context.user
+        if (user):
+            return ProgressModel.objects(user=user, poem=parent).first()
 
 class Collection(MongoengineObjectType):
     class Meta:
@@ -143,8 +143,9 @@ class SubmitLine(Mutation):
         conflicts = find_conflicts(line.key, input.answer)
         correct = (len(conflicts) == 0)
         # If the user is logged in, update their progress
-        if (current_user):
-            progress_query = ProgressModel.objects(user=current_user, poem=poem)
+        user = info.context.user
+        if (user):
+            progress_query = ProgressModel.objects(user=user, poem=poem)
             # Construct update clause and upsert progress (insert or update)
             update_clause = {'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}}
             if (correct): update_clause['$inc'] = {'num_correct': 1}
@@ -154,9 +155,9 @@ class SubmitLine(Mutation):
             # If not, add in_progress
             complete = (progress.num_correct == len(poem.lines))
             if complete:
-                current_user.update(pull__in_progress=poem, add_to_set__completed=poem)
+                user.update(pull__in_progress=poem, add_to_set__completed=poem)
             else:
-                current_user.update(add_to_set__in_progress=poem)
+                user.update(add_to_set__in_progress=poem)
             
         # Construct response
         return SubmitLine(conflicts=conflicts, correct=correct)
@@ -179,8 +180,10 @@ class Login(Mutation):
             if bcrypt.check_password_hash(user.password_hashed, input.password):
                 # Create new access token and set refresh token in cookies
                 token = create_access_token(user)
-                # Notify executor to create new refresh token
-                info.context['create_refresh_token'] = True
+                # Update context with new user and request a refresh token
+                # to be attached to the response
+                info.context.user = user
+                info.context.create_refresh_token = True
                 return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
@@ -212,8 +215,10 @@ class Register(Mutation):
             user.save()
             # Create new access token
             access_token = create_access_token(user)
-            # Notify executor to create new refresh token
-            info.context['create_refresh_token'] = True
+            # Update context with new user and request a refresh token
+            # to be attached to the response
+            info.context.user = user
+            info.context.create_refresh_token = True
             return Register(ok=True, result=access_token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
@@ -229,9 +234,11 @@ class Refresh(Mutation):
         # This creates a new "JWT context" which updates the current_user
         # If refresh token is present, create new access token and return it
         # If not, return not ok
+        # TODO Could move this logic to the context object, would make more sense
+        # Also current logic is bugged
         try:
             verify_jwt_in_request(refresh=True, locations='cookies')
-            token = create_access_token(current_user)
+            token = create_access_token(info.context.user)
             return Refresh(ok=True, result=token)
         except NoAuthorizationError:
             return Refresh(ok=False)
