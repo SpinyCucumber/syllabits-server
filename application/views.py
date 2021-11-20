@@ -1,4 +1,4 @@
-from flask_jwt_extended import current_user, create_refresh_token, set_refresh_cookies, verify_jwt_in_request
+from flask_jwt_extended import get_current_user, create_refresh_token, set_refresh_cookies, verify_jwt_in_request
 from flask import current_app as app
 from .schemas import public_schema, user_schema
 from .flask_graphql import DynamicGraphQLView
@@ -12,32 +12,23 @@ class Context:
     user = None
     create_refresh_token = False
     
-    def verify_identity(refresh=False):
+    def verify_identity(self, refresh=False):
         locations = 'cookies' if refresh else None
         verify_jwt_in_request(optional=True, refresh=refresh, locations=locations)
+        # Make sure to update user
+        self.user = get_current_user()
 
-# Construct GraphQL view
-# We choose the schema based on the
-# authentication status of the user
-def get_schema():
-    if current_user: return user_schema
-    return public_schema
-# Use the user as the root value of the schema for convenience
-def get_root_value():
-    return current_user
-
-graphql = DynamicGraphQLView(
-    get_schema=get_schema,
-    get_root_value=get_root_value,
-    graphiql=app.config["ENABLE_GRAPHIQL"]
-)
+graphql = DynamicGraphQLView(graphiql=app.config["ENABLE_GRAPHIQL"])
 
 @app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def handle_request():
     # Use the access token to discern identity by default
     context = Context()
     context.verify_identity()
-    response = graphql.dispatch_request(context)
+    # Dynamically choose schema based on authentication
+    # Use the user as the root value of the schema for convenience
+    schema = user_schema if context.user else public_schema
+    response = graphql.dispatch_request(schema, root_value=context.user, context=context)
     # If a refresh token was requested, create a refresh token
     # for the current user and attach it as a cookie
     if (context.create_refresh_token):

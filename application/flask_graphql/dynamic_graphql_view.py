@@ -11,8 +11,8 @@ from .render_graphiql import render_graphiql
 
 """
 This is a fork of the flask_graphql project.
-This class is based on the original GraphQL view, but can choose a schema dynamically per-request,
-facilitating multi-scheme scenarios (for example, authenticated users get access to a different schema)
+This class is based on the original GraphQL view, but supports choosing a schema per-request, among other things.
+This facilitates multi-scheme scenarios (for example, authenticated users get access to a different schema)
 """
 class DynamicGraphQLView(View):
     schema = None
@@ -35,10 +35,6 @@ class DynamicGraphQLView(View):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    # noinspection PyUnusedLocal
-    def get_root_value(self):
-        return self.root_value
-
     def get_middleware(self):
         return self.middleware
 
@@ -47,9 +43,6 @@ class DynamicGraphQLView(View):
 
     def get_executor(self):
         return self.executor
-    
-    def get_schema(self):
-        return self.schema
 
     def render_graphiql(self, params, result):
         return render_graphiql(
@@ -63,7 +56,7 @@ class DynamicGraphQLView(View):
     format_error = staticmethod(default_format_error)
     encode = staticmethod(json_encode)
 
-    def dispatch_request(self, context):
+    def dispatch_request(self, schema, root_value=None, context=None):
         try:
             request_method = request.method.lower()
             data = self.parse_body()
@@ -81,7 +74,7 @@ class DynamicGraphQLView(View):
                 extra_options['executor'] = executor
 
             execution_results, all_params = run_http_query(
-                self.get_schema(),
+                schema,
                 request_method,
                 data,
                 query_data=request.args,
@@ -90,7 +83,7 @@ class DynamicGraphQLView(View):
                 backend=self.get_backend(),
 
                 # Execute options
-                root=self.get_root_value(),
+                root=root_value,
                 context=context,
                 middleware=self.get_middleware(),
                 **extra_options
