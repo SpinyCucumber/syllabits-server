@@ -38,7 +38,7 @@ class ResetProgress(Mutation):
 
 class Logout(Mutation):
     ok = Boolean()
-    def mutate(root, info, input):
+    def mutate(root, info):
         # Switch to a refresh token context
         info.context.verify_identity(refresh=True)
         # Construct a token block
@@ -51,5 +51,6 @@ class Logout(Mutation):
 
 class Mutation(PublicMutation, ObjectType):
     reset_progress = ResetProgress.Field()
+    logout = Logout.Field()
 
 schema = Schema(query=Query, mutation=Mutation)
