@@ -3,7 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from bson.objectid import ObjectId
 
-from .models import User
+from .models import User, TokenBlocklist
 
 cors = CORS()
 bcrypt = Bcrypt()
@@ -22,5 +22,13 @@ def user_lookup_callback(jwt_header, jwt_data):
 @jwt.additional_claims_loader
 def additional_claims_callback(user):
     return { 'is_admin': user.is_admin, 'email': user.email }
+
+# Set up blocked token checker
+# If a block exists for the jti of the jwt, we block it
+@jwt.token_in_blocklist_loader
+def check_token_block(jwt_header, jwt_payload):
+    jti = jwt_payload['jti']
+    block = TokenBlocklist.objects.with_id(jti)
+    return block is not None
 
 all = [cors, bcrypt, jwt]
