@@ -1,8 +1,7 @@
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import (EmailField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField)
+from mongoengine.fields import (EmailField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField, DateTimeField)
 
 # Could create a field that wraps string field for block sequences
-
 class Collection(Document):
     meta = {'collection': 'collection'}
     title = StringField()
@@ -61,3 +60,11 @@ class Progress(Document):
     poem = ReferenceField(Poem)
     lines = EmbeddedDocumentListField(ProgressLine)
     num_correct = IntField()
+
+class TokenBlocklist(Document):
+    meta = {
+        'collection': 'token_blocklist',
+        'indexes': [{'fields': ['expires'], 'expireAfterSeconds': 0}]
+    }
+    jti = StringField(primary_key=True)
+    expires = DateTimeField()
