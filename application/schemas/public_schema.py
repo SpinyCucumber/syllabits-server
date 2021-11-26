@@ -97,10 +97,10 @@ class Collection(MongoengineObjectType):
     class Meta:
         model = CollectionModel
         interfaces = (Node,)
-    poems = MongoengineConnectionField(Poem)
-    # Returns all poems in this collection
-    def resolve_poems(parent, info):
-        return PoemModel.objects(collection=parent).order_by('index')
+    # Field to retrieve a poem using its index
+    poem = Field(Poem, index=Int(required=True))
+    def resolve_poem(root, info, index):
+        return root.poems[index]
 
 class Query(ObjectType):
     node = Node.Field()
