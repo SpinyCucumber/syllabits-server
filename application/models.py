@@ -71,7 +71,7 @@ class User(Document):
     """
     A list of poems the user has completed.
     A poem becomes completed once all lines are correct. Once completed, a poem is no longer
-    considered in-progress, but have become in-progress again by resetting the progress.
+    considered in-progress, but can become in-progress again by resetting the progress.
     """
     completed = ListField(ReferenceField(Poem))
 
