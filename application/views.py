@@ -1,5 +1,6 @@
 from flask_jwt_extended import get_current_user, create_refresh_token, set_refresh_cookies, verify_jwt_in_request
 from flask_jwt_extended.exceptions import RevokedTokenError
+from jwt.exceptions import InvalidTokenError
 from flask import current_app as app
 from .schemas import public_schema, user_schema
 from .flask_graphql import DynamicGraphQLView
@@ -20,7 +21,7 @@ class Context:
         try:
             verify_jwt_in_request(optional=True, refresh=refresh, locations=locations)
             self.user = get_current_user()
-        except RevokedTokenError:
+        except (RevokedTokenError, InvalidTokenError):
             self.user = None
 
 graphql = DynamicGraphQLView(graphiql=app.config["ENABLE_GRAPHIQL"])
