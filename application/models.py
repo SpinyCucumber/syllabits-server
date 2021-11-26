@@ -21,6 +21,7 @@ class Collection(Document):
     """
     categories = ListField(ReferenceField(Category))
     poems = ListField(ReferenceField('Poem'))
+    primary = BooleanField(default=False)
 
 class PoemLine(EmbeddedDocument):
     text = StringField()
