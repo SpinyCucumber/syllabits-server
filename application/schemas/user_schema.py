@@ -1,20 +1,25 @@
-from graphene_mongo import MongoengineConnectionField
-from graphene import (Schema, Mutation, ObjectType, InputObjectType, Boolean)
+from graphene_mongo import MongoengineObjectType
+from graphene import (Schema, Mutation, ObjectType, InputObjectType, Boolean, Field)
 from graphene.relay import GlobalID, Node
-from flask_jwt_extended import current_user
 
-from .public_schema import Poem, Query as PublicQuery, Mutation as PublicMutation
-from ..models import Progress as ProgressModel, TokenBlocklist as TokenBlocklistModel
+from .public_schema import Query as PublicQuery, Mutation as PublicMutation
+from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
 from flask_jwt_extended import get_jwt
 from datetime import datetime
 
+class User(MongoengineObjectType):
+    class Meta:
+        model = UserModel
+        interfaces = (Node,)
+        # Definitely don't want to expose this
+        exclude_fields = ('password_hashed',)
+
 class Query(PublicQuery, ObjectType):
-    # Poems that the user has completed
-    completed = MongoengineConnectionField(Poem)
-    # Poems that the user are currently working on
-    in_progress = MongoengineConnectionField(Poem)
-    # Poems that the user has manually saved
-    saved = MongoengineConnectionField(Poem)
+    # Reference to the current user
+    # This allows the current user to query their own saved poems/etc, but not others
+    me = Field(User)
+    def resolve_me(root, info):
+        return info.context.user
 
 """
 Mutations
@@ -30,10 +35,11 @@ class ResetProgress(Mutation):
     def mutate(root, info, input):
         # Lookup poem and user
         poem = Node.get_node_from_global_id(info, input.poemID)
+        user = info.context.user
         # Delete the progress associated with the poem and the current user
-        ProgressModel.objects(user=current_user, poem=poem).delete()
+        ProgressModel.objects(user=user, poem=poem).delete()
         # Remove the poem from the user's in-progress and completed poems
-        current_user.update(pull__in_progress=poem, pull__completed=poem)
+        user.update(pull__in_progress=poem, pull__completed=poem)
         return ResetProgress(ok=True)
 
 class Logout(Mutation):

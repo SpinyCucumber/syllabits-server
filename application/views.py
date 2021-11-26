@@ -32,9 +32,8 @@ def handle_request():
     context = Context()
     context.verify_identity()
     # Dynamically choose schema based on authentication
-    # Use the user as the root value of the schema for convenience
     schema = user_schema if context.user else public_schema
-    response = graphql.dispatch_request(schema, root_value=context.user, context=context)
+    response = graphql.dispatch_request(schema, context=context)
     # If a refresh token was requested, create a refresh token
     # for the current user and attach it as a cookie
     if (context.create_refresh_token):

@@ -2,8 +2,7 @@ from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Float, List, Enum)
-from flask_jwt_extended import create_access_token, verify_jwt_in_request
-from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 
 from ..models import (
