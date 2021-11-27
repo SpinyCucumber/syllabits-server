@@ -1,5 +1,5 @@
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import (EmailField, EmbeddedDocumentField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField, DateTimeField)
+from mongoengine.fields import (EmailField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField, DateTimeField)
 
 """
 Categories are like "tags" used to describe poems and collections.
@@ -28,25 +28,27 @@ class PoemLine(EmbeddedDocument):
     key = StringField()
     stanza_break = BooleanField(default=False)
 
-"""
-Describes a poem's relationship to a collection
-Since collections are ordered, each poem has a unique index in each collection it's a member of.
-"""
-class CollectionMember(EmbeddedDocument):
-    collection = ReferenceField(Collection)
-    index = IntField()
-
 class Poem(Document):
     meta = {'collection': 'poem'}
     categories = ListField(ReferenceField(Category))
     title = StringField()
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
-    """
-    A poem is optionally a member of a "primary collection," which is
-    effectively the "owner collection" of the poem.
-    """
-    primary_member = EmbeddedDocumentField(CollectionMember, required=False)
+
+"""
+There are several ways to locate a poem.
+One way is to directly use the ID of a poem.
+Another way is to identity a collection and specify an index.
+"""
+class PoemLocation(EmbeddedDocument):
+    meta = {'allow_inheritance': True}
+
+class DirectionLocation(PoemLocation):
+    poem = ReferenceField(Poem)
+
+class CollectionLocation(PoemLocation):
+    collection = ReferenceField(Collection)
+    index = IntField()
 
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}

@@ -1,13 +1,15 @@
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, Float, List, Enum)
+from graphene import (ObjectType, Mutation, Schema, Field, Argument, InputObjectType, Int, String, Float, Union, List, Enum)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 
 from ..models import (
     Collection as CollectionModel,
     PoemLine as PoemLineModel,
+    DirectionLocation as DirectLocationModel,
+    CollectionLocation as CollectionLocationModel,
     Poem as PoemModel,
     User as UserModel,
     Progress as ProgressModel,
@@ -68,6 +70,18 @@ class PoemLine(MongoengineObjectType):
         exclude_fields = ('key',)
     number = Int()
 
+class DirectLocation(MongoengineObjectType):
+    class Meta:
+        model = DirectLocationModel
+
+class CollectionLocation(MongoengineObjectType):
+    class Meta:
+        model = CollectionLocationModel
+
+class PoemLocation(Union):
+    class Meta:
+        types = (DirectLocation, CollectionLocation)
+
 class Poem(MongoengineObjectType):
     class Meta:
         model = PoemModel
@@ -106,6 +120,10 @@ class Query(ObjectType):
     node = Node.Field()
     all_collections = MongoengineConnectionField(Collection)
     all_poems = MongoengineConnectionField(Poem)
+    # Expose a field to query a poem using a poem location
+    # A poem can be addressed in different contexts
+    # TODO
+    # poem = Field(Poem, location=Argument(PoemLocation))
 
 """
 Mutations
