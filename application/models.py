@@ -34,6 +34,11 @@ class Poem(Document):
     title = StringField()
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
+    # These fields are deprecated and will be phased out in favor of "smarter" collection handling
+    next = ReferenceField('self')
+    prev = ReferenceField('self')
+    index = IntField()
+    collection = ReferenceField(Collection)
 
 """
 There are several ways to locate a poem.
