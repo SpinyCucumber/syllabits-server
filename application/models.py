@@ -35,6 +35,7 @@ class Poem(Document):
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
     # These fields are deprecated and will be phased out in favor of "smarter" collection handling
+    # The semantics of these fields are vague when poems can be included in multiple collections
     next = ReferenceField('self')
     prev = ReferenceField('self')
     index = IntField()
@@ -44,16 +45,13 @@ class Poem(Document):
 There are several ways to locate a poem.
 One way is to directly use the ID of a poem.
 Another way is to identity a collection and specify an index.
+Since GraphQL doesn't support Uni
 """
 class PoemLocation(EmbeddedDocument):
     meta = {'allow_inheritance': True}
-
-class DirectionLocation(PoemLocation):
-    poem = ReferenceField(Poem)
-
-class CollectionLocation(PoemLocation):
-    collection = ReferenceField(Collection)
-    index = IntField()
+    poem = ReferenceField(Poem, required=False)
+    collection = ReferenceField(Collection, required=False)
+    index = IntField(required=False)
 
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}

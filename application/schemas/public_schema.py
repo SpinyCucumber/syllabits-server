@@ -8,8 +8,6 @@ from mongoengine.errors import NotUniqueError
 from ..models import (
     Collection as CollectionModel,
     PoemLine as PoemLineModel,
-    DirectionLocation as DirectLocationModel,
-    CollectionLocation as CollectionLocationModel,
     Poem as PoemModel,
     User as UserModel,
     Progress as ProgressModel,
@@ -69,18 +67,6 @@ class PoemLine(MongoengineObjectType):
         # Be sure to exclude key (we don't want people automatically solving our poems!)
         exclude_fields = ('key',)
     number = Int()
-
-class DirectLocation(MongoengineObjectType):
-    class Meta:
-        model = DirectLocationModel
-
-class CollectionLocation(MongoengineObjectType):
-    class Meta:
-        model = CollectionLocationModel
-
-class PoemLocation(Union):
-    class Meta:
-        types = (DirectLocation, CollectionLocation)
 
 class Poem(MongoengineObjectType):
     class Meta:

@@ -3,9 +3,11 @@
 - [ ] README (more info)
 - [x] Mutation logic
 - [ ] Login/Register mutations
-- [ ] Tags
+- [ ] Categories
     - Literary movement, historical period, themes, topics, images, etc.
     - Choose some initial tags when registering
     - Recommendation metric?
         - Calculated using user interests and poem tags
 - [ ] Separate data structure to track popular tags
+- [ ] Editors can submit poems, which then have to be approved
+- Should probably make admin first
