@@ -151,9 +151,13 @@ class PlayPoem(Mutation):
     poem = Field(Poem)
 
     def mutate(root, info, location):
-        # TODO
-        print(location)
-        pass
+        # Resolve location
+        poem = resolve_location(info, location)
+        # If user is logged in, update 'last played location'
+        user = info.context.user
+        if (user):
+            user.locations[poem.id] = location
+        return PlayPoem(poem=resolve_location(info, location))
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
