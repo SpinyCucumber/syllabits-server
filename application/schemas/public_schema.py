@@ -12,7 +12,6 @@ from ..models import (
     User as UserModel,
     Progress as ProgressModel,
     ProgressLine as ProgressLineModel,
-    LocationType as LocationTypeModel
 )
 
 from ..extensions import bcrypt
@@ -70,8 +69,6 @@ class Progress(MongoengineObjectType):
             value.number = int(key)
             return value
         return [ map(*entry) for entry in parent.lines.items() ]
-
-LocationType = Enum.from_enum(LocationTypeModel)
 
 class PoemLine(MongoengineObjectType):
     class Meta:
