@@ -11,7 +11,6 @@ from mongoengine.fields import (
     MapField,
     DictField,
 )
-from enum import Enum
 
 """
 Categories are like "tags" used to describe poems and collections.
