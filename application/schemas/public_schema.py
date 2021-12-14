@@ -55,12 +55,7 @@ class Progress(MongoengineObjectType):
             return value
         return [ map(*entry) for entry in parent.lines.items() ]
 
-
 LocationType = Enum.from_enum(LocationTypeModel)
-
-class PoemLocation(InputObjectType):
-    type = LocationType()
-    collectionID = 
 
 class PoemLine(MongoengineObjectType):
     class Meta:
@@ -136,6 +131,21 @@ class RandomPoem(Mutation):
         # Convert raw data to a Poem object to automatically dereference things
         poem_obj = PoemModel._from_son(poem_data)
         return RandomPoem(poem=poem_obj)
+
+class LocationInput(InputObjectType):
+    type = LocationType(required=True)
+    poemID = GlobalID(required=False)
+    collectionID = GlobalID(required=False)
+    index = Int(required=False)
+
+class PlayPoem(Mutation):
+    class Arguments:
+        location = LocationInput(required=True)
+    poem = Field(Poem)
+
+    def mutate(root, info, location):
+        # TODO
+        pass
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
