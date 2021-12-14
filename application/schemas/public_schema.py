@@ -265,6 +265,7 @@ class Refresh(Mutation):
         return Refresh(ok=False)
 
 class Mutation(ObjectType):
+    play_poem = PlayPoem.Field()
     random_poem = RandomPoem.Field()
     submit_line = SubmitLine.Field()
     login = Login.Field()
