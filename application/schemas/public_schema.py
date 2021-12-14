@@ -1,7 +1,7 @@
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, JSONString)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 
@@ -73,7 +73,7 @@ class Poem(MongoengineObjectType):
         interfaces = (Node,)
         exclude_fields = ('lines',)
     progress = Field(Progress)
-    location = Field(PoemLocation)
+    location = JSONString()
     # Expose number of lines for convenience
     num_lines = Int()
     # Define a custom resolver for the 'lines' field so that we can attach
@@ -140,11 +140,12 @@ class LocationInput(InputObjectType):
 
 class PlayPoem(Mutation):
     class Arguments:
-        location = LocationInput(required=True)
+        location = JSONString(required=True)
     poem = Field(Poem)
 
     def mutate(root, info, location):
         # TODO
+        print(location)
         pass
 
 class SubmitLineInput(InputObjectType):
