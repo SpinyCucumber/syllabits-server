@@ -125,10 +125,6 @@ class Query(ObjectType):
     node = Node.Field()
     all_collections = MongoengineConnectionField(Collection)
     all_poems = MongoengineConnectionField(Poem)
-    # Expose a field to query a poem using a poem location
-    # A poem can be addressed in different contexts
-    # TODO
-    # poem = Field(Poem, location=Argument(PoemLocation))
 
 """
 Mutations
@@ -156,7 +152,7 @@ class PlayPoem(Mutation):
         # If user is logged in, update 'last played location'
         user = info.context.user
         if (user):
-            user.locations[poem.id] = location
+            user.locations[str(poem.id)] = location
         return PlayPoem(poem=resolve_location(info, location))
 
 class SubmitLineInput(InputObjectType):
