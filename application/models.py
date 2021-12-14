@@ -1,10 +1,23 @@
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import (EmailField, EmbeddedDocumentListField, ListField, StringField, BooleanField, ReferenceField, IntField, DateTimeField)
+from mongoengine.fields import (
+    EmailField,
+    EmbeddedDocumentListField,
+    ListField,
+    StringField,
+    BooleanField,
+    ReferenceField,
+    IntField,
+    DateTimeField,
+    EnumField,
+    MapField
+)
+from enum import Enum
 
 """
 Categories are like "tags" used to describe poems and collections.
 Collections are more rigid when compared to categories: they have an order and tend not to change.
 Collections are intended to be used for cataloging, assignments, etc.
+In other words, collections are more "curated"
 Categories are used to describe groups of similar poems. For example, a category could describe poems
 that share a common theme, were written in the same time period, etc.
 """
@@ -41,14 +54,18 @@ class Poem(Document):
     index = IntField()
     collection = ReferenceField(Collection)
 
+class LocationType(Enum):
+    DIRECT = 'direct'
+    COLLECTION = 'collection'
+
 """
 There are several ways to locate a poem.
 One way is to directly use the ID of a poem.
 Another way is to identity a collection and specify an index.
-Since GraphQL doesn't support Uni
+Since GraphQL doesn't support polymorphic inputs, this is the next best thing
 """
 class PoemLocation(EmbeddedDocument):
-    meta = {'allow_inheritance': True}
+    type = EnumField(LocationType, required=True)
     poem = ReferenceField(Poem, required=False)
     collection = ReferenceField(Collection, required=False)
     index = IntField(required=False)
@@ -67,7 +84,7 @@ class User(Document):
     """
     saved = ListField(ReferenceField(Poem))
     """
-    A list of the poems the user is currently "working on."
+    A list of the poems the user is currently "working on"
     Important to note is that all poems in-progress have an associated Progress document,
     but the vice-versa isn't necessarily true. A poem can be completed and not in-progress,
     and still have a progress document.
@@ -75,11 +92,15 @@ class User(Document):
     """
     in_progress = ListField(ReferenceField(Poem))
     """
-    A list of poems the user has completed.
+    A list of poems the user has completed
     A poem becomes completed once all lines are correct. Once completed, a poem is no longer
     considered in-progress, but can become in-progress again by resetting the progress.
     """
     completed = ListField(ReferenceField(Poem))
+    """
+    A map of poems to locations which were most recently used to access the poem
+    """
+    locations = MapField(PoemLocation)
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()
