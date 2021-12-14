@@ -31,6 +31,22 @@ def find_conflicts(key, answer):
     return conflicts
 
 """
+There are several ways to locate a poem.
+One way is to directly use the ID of a poem.
+Another way is to identity a collection and specify an index.
+Since GraphQL doesn't support polymorphic inputs, a simple solution is to use JSONStrings,
+and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
+but this is the next best thing.
+This method takes a location dict and "resolves" it, returning a poem
+"""
+def resolve_location(info, location):
+    if location['type'] == 'direct':
+        return Node.get_node_from_global_id(info, location['poemID'])
+    elif location['type'] == 'collection':
+        collection = Node.get_node_from_global_id(info, location['collectionID'])
+        return collection.poems[location['index']]
+
+"""
 Types/Queries
 """
 
@@ -131,12 +147,6 @@ class RandomPoem(Mutation):
         # Convert raw data to a Poem object to automatically dereference things
         poem_obj = PoemModel._from_son(poem_data)
         return RandomPoem(poem=poem_obj)
-
-class LocationInput(InputObjectType):
-    type = LocationType(required=True)
-    poemID = GlobalID(required=False)
-    collectionID = GlobalID(required=False)
-    index = Int(required=False)
 
 class PlayPoem(Mutation):
     class Arguments:

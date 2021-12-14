@@ -2,16 +2,14 @@ from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     EmailField,
     EmbeddedDocumentListField,
-    EmbeddedDocumentField,
     ListField,
     StringField,
     BooleanField,
     ReferenceField,
     IntField,
     DateTimeField,
-    EnumField,
     MapField,
-    ObjectIdField,
+    DictField,
 )
 from enum import Enum
 
@@ -56,22 +54,6 @@ class Poem(Document):
     index = IntField()
     collection = ReferenceField(Collection)
 
-class LocationType(Enum):
-    DIRECT = 'direct'
-    COLLECTION = 'collection'
-
-"""
-There are several ways to locate a poem.
-One way is to directly use the ID of a poem.
-Another way is to identity a collection and specify an index.
-Since GraphQL doesn't support polymorphic inputs, this is the next best thing
-"""
-class PoemLocation(EmbeddedDocument):
-    type = EnumField(LocationType, required=True)
-    poemID = ObjectIdField(required=False)
-    collectionID = ObjectIdField(required=False)
-    index = IntField(required=False)
-
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
     email = EmailField(unique=True)
@@ -102,7 +84,7 @@ class User(Document):
     """
     A map of poems to locations which were most recently used to access the poem
     """
-    locations = MapField(EmbeddedDocumentField(PoemLocation))
+    locations = MapField(DictField())
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()
