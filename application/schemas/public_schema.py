@@ -1,7 +1,7 @@
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, Argument, InputObjectType, Int, String, Float, Union, List, Enum)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 
@@ -12,7 +12,7 @@ from ..models import (
     User as UserModel,
     Progress as ProgressModel,
     ProgressLine as ProgressLineModel,
-    PoemLocation as PoemLocationModel
+    LocationType as LocationTypeModel
 )
 
 from ..extensions import bcrypt
@@ -54,14 +54,13 @@ class Progress(MongoengineObjectType):
             value.number = int(key)
             return value
         return [ map(*entry) for entry in parent.lines.items() ]
-    # We also define a 'completion' field that returns a percent complete for convenience
-    completion = Float()
-    def resolve_completion(parent, info):
-        return parent.num_correct / len(parent.poem.lines)
 
-class PoemLocation(MongoengineObjectType):
-    class Meta:
-        model = PoemLocationModel
+
+LocationType = Enum.from_enum(LocationTypeModel)
+
+class PoemLocation(InputObjectType):
+    type = LocationType()
+    collectionID = 
 
 class PoemLine(MongoengineObjectType):
     class Meta:

@@ -10,7 +10,8 @@ from mongoengine.fields import (
     IntField,
     DateTimeField,
     EnumField,
-    MapField
+    MapField,
+    ObjectIdField,
 )
 from enum import Enum
 
@@ -67,8 +68,8 @@ Since GraphQL doesn't support polymorphic inputs, this is the next best thing
 """
 class PoemLocation(EmbeddedDocument):
     type = EnumField(LocationType, required=True)
-    poem = ReferenceField(Poem, required=False)
-    collection = ReferenceField(Collection, required=False)
+    poemID = ObjectIdField(required=False)
+    collectionID = ObjectIdField(required=False)
     index = IntField(required=False)
 
 class User(Document):
