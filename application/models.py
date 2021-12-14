@@ -2,6 +2,7 @@ from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     EmailField,
     EmbeddedDocumentListField,
+    EmbeddedDocumentField,
     ListField,
     StringField,
     BooleanField,
@@ -100,7 +101,7 @@ class User(Document):
     """
     A map of poems to locations which were most recently used to access the poem
     """
-    locations = MapField(PoemLocation)
+    locations = MapField(EmbeddedDocumentField(PoemLocation))
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()

@@ -11,7 +11,8 @@ from ..models import (
     Poem as PoemModel,
     User as UserModel,
     Progress as ProgressModel,
-    ProgressLine as ProgressLineModel
+    ProgressLine as ProgressLineModel,
+    PoemLocation as PoemLocationModel
 )
 
 from ..extensions import bcrypt
@@ -58,6 +59,10 @@ class Progress(MongoengineObjectType):
     def resolve_completion(parent, info):
         return parent.num_correct / len(parent.poem.lines)
 
+class PoemLocation(MongoengineObjectType):
+    class Meta:
+        model = PoemLocationModel
+
 class PoemLine(MongoengineObjectType):
     class Meta:
         model = PoemLineModel
@@ -74,6 +79,7 @@ class Poem(MongoengineObjectType):
         interfaces = (Node,)
         exclude_fields = ('lines',)
     progress = Field(Progress)
+    location = Field(PoemLocation)
     # Expose number of lines for convenience
     num_lines = Int()
     # Define a custom resolver for the 'lines' field so that we can attach
@@ -92,6 +98,12 @@ class Poem(MongoengineObjectType):
         user = info.context.user
         if (user):
             return ProgressModel.objects(user=user, poem=parent).first()
+    # The location last used to access a poem
+    # Only resolve if user is present
+    def resolve_location(parent, info):
+        user = info.context.user
+        if (user):
+            return user.locations.get(str(parent.id))
 
 class Collection(MongoengineObjectType):
     class Meta:
