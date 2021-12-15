@@ -4,6 +4,7 @@ from graphene.relay import Node, GlobalID
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, JSONString)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
+from bson import BSON
 
 from ..models import (
     Collection as CollectionModel,
@@ -40,11 +41,14 @@ but this is the next best thing.
 This method takes a location and "resolves" it, returning a poem
 """
 def resolve_location(info, location):
-    if location['type'] == 'direct':
-        return Node.get_node_from_global_id(info, location['poemID'])
-    elif location['type'] == 'collection':
-        collection = Node.get_node_from_global_id(info, location['collectionID'])
-        return collection.poems[location['index']]
+    # Locations are BSON-encoded dicts. A 'type' field specifies whether the location is
+    # "direct" or references a collection.
+    decoded = BSON(location).decode()
+    if decoded['type'] == 'direct':
+        return Node.get_node_from_global_id(info, decoded['poemID'])
+    elif decoded['type'] == 'collection':
+        collection = Node.get_node_from_global_id(info, decoded['collectionID'])
+        return collection.poems[decoded['index']]
 
 """
 Types/Queries
