@@ -36,7 +36,8 @@ Another way is to identity a collection and specify an index.
 Since GraphQL doesn't support polymorphic inputs, a simple solution is to use JSONStrings,
 and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
 but this is the next best thing.
-This method takes a location dict and "resolves" it, returning a poem
+
+This method takes a location and "resolves" it, returning a poem
 """
 def resolve_location(info, location):
     if location['type'] == 'direct':
