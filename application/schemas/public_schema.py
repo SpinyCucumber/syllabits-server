@@ -39,20 +39,28 @@ def decode_location(location):
 def encode_location(location):
     return base64.b64encode(json.dumps(location))
 
+"""
+A connection that supports a 'totalCount' field
+totalCount field may become slow when working with large amounts of data
+"""
 class CountableConnection(Connection):
     class Meta:
         abstract = True
 
     total_count = Int()
-    
+
     def resolve_total_count(root, info):
         return len(root.iterable)
 
+"""
+An extension of MongoengineConnectionField that supports a 'search' argument
+This allows clients to search text indexes using GraphQL
+"""
 class SearchableConnectionField(MongoengineConnectionField):
 
     @property
     def args(self):
-        # Add that juicy search argument
+        # Override the default arguments to add that juicy search argument
         return to_arguments(self._base_args or OrderedDict(), {'search': String()})
     
     @args.setter
