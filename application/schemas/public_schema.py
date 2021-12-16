@@ -161,6 +161,7 @@ class PlayPoem(Mutation):
         # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
         # "direct" or references a collection.
         decoded = decode_location(location)
+        poem, next, previous = None
         if decoded['t'] == LocationType.DIRECT:
             poem=Node.get_node_from_global_id(info, decoded['pid'])
         elif decoded['t'] == LocationType.COLLECTION:
@@ -178,6 +179,7 @@ class PlayPoem(Mutation):
         # If user is logged in, update 'last played location'
         user = info.context.user
         if (user):
+            # TODO Actually update
             user.locations[str(poem.id)] = location
         # Package result
         return PlayPoem(poem=poem, next=next, previous=previous)
