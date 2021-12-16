@@ -31,25 +31,11 @@ def find_conflicts(key, answer):
             conflicts.append(i)
     return conflicts
 
-"""
-There are several ways to locate a poem.
-One way is to directly use the ID of a poem.
-Another way is to identity a collection and specify an index.
-Since GraphQL doesn't support polymorphic inputs, a simple solution is to use JSONStrings,
-and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
-but this is the next best thing.
+def decode_location(location):
+    return json.loads(base64.b64decode(location))
 
-This method takes a location and "resolves" it, returning a poem
-"""
-def resolve_location(info, location):
-    # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
-    # "direct" or references a collection.
-    decoded = json.loads(base64.b64decode(location))
-    if decoded['type'] == 'direct':
-        return Node.get_node_from_global_id(info, decoded['poemID'])
-    elif decoded['type'] == 'collection':
-        collection = Node.get_node_from_global_id(info, decoded['collectionID'])
-        return collection.poems[decoded['index']]
+def encode_location(location):
+    return base64.b64encode(json.dumps(location))
 
 """
 Types/Queries
@@ -147,6 +133,16 @@ class RandomPoem(Mutation):
         poem_obj = PoemModel._from_son(poem_data)
         return RandomPoem(poem=poem_obj)
 
+"""
+There are several ways to locate a poem.
+One way is to directly use the ID of a poem.
+Another way is to identity a collection and specify an index.
+Since GraphQL doesn't support polymorphic inputs, a simple solution is to use Strings,
+and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
+but this is the next best thing.
+
+This method takes a location and "resolves" it, returning a poem
+"""
 class PlayPoem(Mutation):
     class Arguments:
         location = String(required=True)
@@ -154,12 +150,29 @@ class PlayPoem(Mutation):
 
     def mutate(root, info, location):
         # Resolve location
-        poem = resolve_location(info, location)
+        # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
+        # "direct" or references a collection.
+        decoded = decode_location(location)
+        if decoded['t'] == 'direct':
+            poem=Node.get_node_from_global_id(info, decoded['pid'])
+        elif decoded['t'] == 'collection':
+            collection = Node.get_node_from_global_id(info, decoded['cid'])
+            poem = collection.poems[decoded['i']]
+            # Define next and previous locations, if applicable
+            if decoded['i'] > 0:
+                previous = decoded.copy()
+                previous['i'] -= 1
+                previous = encode_location(previous)
+            if decoded['i'] < (collection.poems.length - 1):
+                next = decoded.copy()
+                next['i'] += 1
+                next = encode_location(next)
         # If user is logged in, update 'last played location'
         user = info.context.user
         if (user):
             user.locations[str(poem.id)] = location
-        return PlayPoem(poem=resolve_location(info, location))
+        # Package result
+        return PlayPoem(poem=poem, next=next, previous=previous)
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
