@@ -133,6 +133,10 @@ class RandomPoem(Mutation):
         poem_obj = PoemModel._from_son(poem_data)
         return RandomPoem(poem=poem_obj)
 
+class LocationType(Enum):
+    DIRECT = 0
+    COLLECTION = 1
+
 """
 There are several ways to locate a poem.
 One way is to directly use the ID of a poem.
@@ -141,21 +145,25 @@ Since GraphQL doesn't support polymorphic inputs, a simple solution is to use St
 and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
 but this is the next best thing.
 
-This method takes a location and "resolves" it, returning a poem
+This mutation takes a location and "resolves" it, returning a poem
+A location can also provide information about "next" and "previous" poems, which
+allows users to navigate
 """
 class PlayPoem(Mutation):
     class Arguments:
         location = String(required=True)
     poem = Field(Poem)
+    next = String()
+    previous = String()
 
     def mutate(root, info, location):
         # Resolve location
         # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
         # "direct" or references a collection.
         decoded = decode_location(location)
-        if decoded['t'] == 'direct':
+        if decoded['t'] == LocationType.DIRECT:
             poem=Node.get_node_from_global_id(info, decoded['pid'])
-        elif decoded['t'] == 'collection':
+        elif decoded['t'] == LocationType.COLLECTION:
             collection = Node.get_node_from_global_id(info, decoded['cid'])
             poem = collection.poems[decoded['i']]
             # Define next and previous locations, if applicable
