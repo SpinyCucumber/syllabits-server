@@ -1,6 +1,8 @@
+from typing_extensions import OrderedDict
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
+from graphene.types.argument import to_arguments
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
@@ -36,6 +38,21 @@ def decode_location(location):
 
 def encode_location(location):
     return base64.b64encode(json.dumps(location))
+
+class SearchableConnection(MongoengineConnectionField):
+    
+    @property
+    def args(self):
+        # Add that juicy search argument
+        return to_arguments(self._base_args or OrderedDict(), {'search': String()})
+    
+    @args.setter
+    def args(self, args):
+        self._base_args = args
+    
+    def get_queryset(self, model, info, **args):
+        search = args.pop('search', None)
+        return model.objects.search_text(search).order_by('$text_score')
 
 """
 Types/Queries
@@ -115,8 +132,8 @@ class Collection(MongoengineObjectType):
 
 class Query(ObjectType):
     node = Node.Field()
-    all_collections = MongoengineConnectionField(Collection)
-    all_poems = MongoengineConnectionField(Poem)
+    all_collections = SearchableConnection(Collection)
+    all_poems = SearchableConnection(Poem)
 
 """
 Mutations
