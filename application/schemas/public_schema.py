@@ -42,9 +42,11 @@ def encode_location(location):
 class CountableConnection(Connection):
     class Meta:
         abstract = True
+
     total_count = Int()
-    def resolve_total_count(self, info):
-        return self.length
+    
+    def resolve_total_count(root, info):
+        return len(root.iterable)
 
 class SearchableConnectionField(MongoengineConnectionField):
 
@@ -59,7 +61,10 @@ class SearchableConnectionField(MongoengineConnectionField):
     
     def get_queryset(self, model, info, **args):
         search = args.pop('search', None)
-        return model.objects.search_text(search).order_by('$text_score')
+        query_set = model.objects
+        if (search):
+            query_set = query_set.search_text(search).order_by('$text_score')
+        return query_set
 
 """
 Types/Queries
@@ -151,7 +156,7 @@ Mutations
 class RandomPoem(Mutation):
     poem = Field(Poem)
     
-    def mutate(root, info):
+    def mutate(parent, info):
         # Retrieve one random poem using the Mongo pipeline
         pipeline = [{ '$sample': { 'size': 1 } }]
         poem_data = PoemModel.objects().aggregate(pipeline).next()
@@ -182,7 +187,7 @@ class PlayPoem(Mutation):
     next = String()
     previous = String()
 
-    def mutate(root, info, location):
+    def mutate(parent, info, location):
         # Resolve location
         # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
         # "direct" or references a collection.
@@ -223,7 +228,7 @@ class SubmitLine(Mutation):
     conflicts = List(Int)
     correct = Boolean()
 
-    def mutate(root, info, input):
+    def mutate(parent, info, input):
         # Lookup poem and line
         poem = Node.get_node_from_global_id(info, input.poemID)
         line = poem.lines[input.lineNum]
@@ -261,7 +266,7 @@ class Login(Mutation):
     result = String()
     ok = Boolean()
 
-    def mutate(root, info, input):
+    def mutate(parent, info, input):
         # Attempt to find user and check if hashed passwords match
         try:
             user = UserModel.objects(email=input.email).get()
@@ -292,7 +297,7 @@ class Register(Mutation):
     ok = Boolean()
     error = Field(RegisterError)
 
-    def mutate(root, info, input):
+    def mutate(parent, info, input):
         # Create new user with email and attempt to save
         # Save before hashing password as hashing is expensive
         user = UserModel(email=input.email, is_admin=False)
@@ -317,7 +322,7 @@ Creates a new access token using the user's refresh token
 class Refresh(Mutation):
     ok = Boolean()
     result = String()
-    def mutate(root, info):
+    def mutate(parent, info):
         # Verify identity using refresh token
         info.context.verify_identity(refresh=True)
         user = info.context.user
