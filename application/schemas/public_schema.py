@@ -1,7 +1,7 @@
-from typing_extensions import OrderedDict
+from collections import OrderedDict
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
-from graphene.relay import Node, GlobalID
+from graphene.relay import Node, GlobalID, Connection
 from graphene.types.argument import to_arguments
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
 from flask_jwt_extended import create_access_token
@@ -39,8 +39,15 @@ def decode_location(location):
 def encode_location(location):
     return base64.b64encode(json.dumps(location))
 
-class SearchableConnection(MongoengineConnectionField):
-    
+class CountableConnection(Connection):
+    class Meta:
+        abstract = True
+    total_count = Int()
+    def resolve_total_count(self, info):
+        return self.length
+
+class SearchableConnectionField(MongoengineConnectionField):
+
     @property
     def args(self):
         # Add that juicy search argument
@@ -93,6 +100,7 @@ class Poem(MongoengineObjectType):
     class Meta:
         model = PoemModel
         interfaces = (Node,)
+        connection_class = CountableConnection
         exclude_fields = ('lines',)
     progress = Field(Progress)
     location = String()
@@ -125,6 +133,7 @@ class Collection(MongoengineObjectType):
     class Meta:
         model = CollectionModel
         interfaces = (Node,)
+        connection_class = CountableConnection
     # Field to retrieve a poem using its index
     poem = Field(Poem, index=Int(required=True))
     def resolve_poem(root, info, index):
@@ -132,8 +141,8 @@ class Collection(MongoengineObjectType):
 
 class Query(ObjectType):
     node = Node.Field()
-    all_collections = SearchableConnection(Collection)
-    all_poems = SearchableConnection(Poem)
+    all_collections = SearchableConnectionField(Collection)
+    all_poems = SearchableConnectionField(Poem)
 
 """
 Mutations
