@@ -9,7 +9,6 @@ from mongoengine.fields import (
     IntField,
     DateTimeField,
     MapField,
-    DictField,
 )
 
 """
@@ -83,7 +82,7 @@ class User(Document):
     """
     A map of poems to locations which were most recently used to access the poem
     """
-    locations = MapField(DictField())
+    locations = MapField(StringField())
 
 class ProgressLine(EmbeddedDocument):
     answer = StringField()
