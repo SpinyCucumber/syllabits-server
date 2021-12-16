@@ -50,7 +50,7 @@ class CountableConnection(Connection):
     total_count = Int()
 
     def resolve_total_count(root, info):
-        return len(root.iterable)
+        return root.iterable.count()
 
 """
 An extension of MongoengineConnectionField that supports a 'search' argument
