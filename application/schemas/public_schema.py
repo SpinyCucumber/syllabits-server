@@ -1,10 +1,11 @@
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, JSONString)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
 from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
-from bson import BSON
+import base64
+import json
 
 from ..models import (
     Collection as CollectionModel,
@@ -41,9 +42,9 @@ but this is the next best thing.
 This method takes a location and "resolves" it, returning a poem
 """
 def resolve_location(info, location):
-    # Locations are BSON-encoded dicts. A 'type' field specifies whether the location is
+    # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
     # "direct" or references a collection.
-    decoded = BSON(location).decode()
+    decoded = json.loads(base64.b64decode(location))
     if decoded['type'] == 'direct':
         return Node.get_node_from_global_id(info, decoded['poemID'])
     elif decoded['type'] == 'collection':
@@ -91,7 +92,7 @@ class Poem(MongoengineObjectType):
         interfaces = (Node,)
         exclude_fields = ('lines',)
     progress = Field(Progress)
-    location = JSONString()
+    location = String()
     # Expose number of lines for convenience
     num_lines = Int()
     # Define a custom resolver for the 'lines' field so that we can attach
@@ -148,7 +149,7 @@ class RandomPoem(Mutation):
 
 class PlayPoem(Mutation):
     class Arguments:
-        location = JSONString(required=True)
+        location = String(required=True)
     poem = Field(Poem)
 
     def mutate(root, info, location):
