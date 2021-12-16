@@ -164,9 +164,9 @@ class PlayPoem(Mutation):
         next = None
         previous = None
         if decoded['t'] == LocationType.DIRECT:
-            poem=Node.get_node_from_global_id(info, decoded['pid'])
+            poem=Node.get_node_from_global_id(info, decoded['p'])
         elif decoded['t'] == LocationType.COLLECTION:
-            collection = Node.get_node_from_global_id(info, decoded['cid'])
+            collection = Node.get_node_from_global_id(info, decoded['c'])
             poem = collection.poems[decoded['i']]
             # Define next and previous locations, if applicable
             if decoded['i'] > 0:
