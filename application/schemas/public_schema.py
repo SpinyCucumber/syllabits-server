@@ -180,8 +180,8 @@ class PlayPoem(Mutation):
         # If user is logged in, update 'last played location'
         user = info.context.user
         if (user):
-            # TODO Actually update
-            user.locations[str(poem.id)] = location
+            update_clause = {'$set': {f'locations.{str(poem.id)}': location}}
+            user.update(__raw__=update_clause)
         # Package result
         return PlayPoem(poem=poem, next=next, previous=previous)
 
