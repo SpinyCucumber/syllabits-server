@@ -40,7 +40,16 @@ class PoemLine(EmbeddedDocument):
     stanza_break = BooleanField(default=False)
 
 class Poem(Document):
-    meta = {'collection': 'poem'}
+    meta = {
+        'collection': 'poem',
+        'indexes': [
+            {
+                'fields': ['$title', '$author', '$lines.text'],
+                'default_language': 'english',
+                'weights': {'title': 10, 'author': 10, 'lines.text': 2}
+            }
+        ]
+    }
     categories = ListField(ReferenceField(Category))
     title = StringField()
     author = StringField()
