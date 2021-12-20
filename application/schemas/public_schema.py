@@ -61,7 +61,7 @@ class SearchableConnectionField(MongoengineConnectionField):
     @property
     def args(self):
         # Override the default arguments to add that juicy search argument
-        return to_arguments(self._base_args or OrderedDict(), {'search': String()})
+        return to_arguments(self._base_args or OrderedDict(), {'search': String(), 'order_by': String()})
     
     @args.setter
     def args(self, args):
@@ -69,9 +69,14 @@ class SearchableConnectionField(MongoengineConnectionField):
     
     def get_queryset(self, model, info, **args):
         search = args.pop('search', None)
+        order_by = args.pop('order_by', None)
+        # Construct query
         query_set = model.objects
         if (search):
-            query_set = query_set.search_text(search).order_by('$text_score')
+            query_set = query_set.search_text(search)
+        if (order_by):
+            field = '$text_score' if order_by == 'relevance' else order_by
+            query_set = query_set.order_by(field)
         return query_set
 
 """
