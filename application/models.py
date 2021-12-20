@@ -21,7 +21,7 @@ that share a common theme, were written in the same time period, etc.
 """
 class Category(Document):
     meta = {'collection': 'category'}
-    name = StringField()
+    name = StringField(primary_key=True)
     references = IntField()
 
 class Collection(Document):
