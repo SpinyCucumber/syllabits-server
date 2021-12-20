@@ -72,11 +72,13 @@ class SearchableConnectionField(MongoengineConnectionField):
         order_by = args.pop('order_by', None)
         # Construct query
         query_set = model.objects
-        if (search):
+        if search:
             query_set = query_set.search_text(search)
-        if (order_by):
-            field = '$text_score' if order_by == 'relevance' else order_by
-            query_set = query_set.order_by(field)
+        if order_by:
+            if order_by == 'relevance':
+                if search: query_set = query_set.order_by('$text_score')
+            else:
+                query_set = query_set.order_by(order_by)
         return query_set
 
 """
