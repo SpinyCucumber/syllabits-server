@@ -65,7 +65,7 @@ class SearchableConnectionField(MongoengineConnectionField):
             search = args.pop('search', None)
             order_by = args.pop('order_by', None)
             # Construct query
-            query_set = model.objects
+            query_set = model.objects(**args)
             if search:
                 query_set = query_set.search_text(search)
             if order_by:
