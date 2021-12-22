@@ -10,6 +10,7 @@ import base64
 import json
 
 from ..models import (
+    Category as CategoryModel,
     Collection as CollectionModel,
     PoemLine as PoemLineModel,
     Poem as PoemModel,
@@ -84,6 +85,12 @@ class SearchableConnectionField(MongoengineConnectionField):
 """
 Types/Queries
 """
+
+class Category(MongoengineObjectType):
+    class Meta:
+        model = CategoryModel
+        interfaces = (Node,)
+        connection_class = CountableConnection
 
 class ProgressLine(MongoengineObjectType):
     class Meta:
@@ -161,8 +168,9 @@ class Collection(MongoengineObjectType):
 
 class Query(ObjectType):
     node = Node.Field()
-    all_collections = SearchableConnectionField(Collection)
-    all_poems = SearchableConnectionField(Poem)
+    collections = SearchableConnectionField(Collection)
+    poems = SearchableConnectionField(Poem)
+    categories = SearchableConnectionField(Category)
 
 """
 Mutations
