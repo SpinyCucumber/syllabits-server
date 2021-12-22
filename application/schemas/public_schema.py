@@ -62,7 +62,16 @@ class SearchableConnectionField(MongoengineConnectionField):
     @property
     def args(self):
         # Override the default arguments to add that juicy search argument
-        return to_arguments(self._base_args or OrderedDict(), {'search': String(), 'order_by': String()})
+        return to_arguments(
+            self._base_args or OrderedDict(),
+            {
+                **self.field_args,
+                **self.filter_args,
+                **self.reference_args,
+                'search': String(),
+                'order_by': String()
+            }
+        )
     
     @args.setter
     def args(self, args):
