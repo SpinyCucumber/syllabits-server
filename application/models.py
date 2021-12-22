@@ -22,7 +22,7 @@ that share a common theme, were written in the same time period, etc.
 class Category(Document):
     meta = {'collection': 'category'}
     name = StringField(primary_key=True)
-    references = IntField()
+    ref_count = IntField()
 
 class Collection(Document):
     meta = {'collection': 'collection'}
@@ -42,6 +42,7 @@ class PoemLine(EmbeddedDocument):
 class Poem(Document):
     meta = {
         'collection': 'poem',
+        # We define a text index for searching poems using content, title, etc.
         'indexes': [
             {
                 'fields': ['$title', '$author', '$lines.text'],
@@ -60,6 +61,12 @@ class Poem(Document):
     prev = ReferenceField('self')
     index = IntField()
     collection = ReferenceField(Collection)
+    # For testing
+    # Assumes poem doesn't already belong to category
+    def add_category(self, name):
+        category = Category.objects(name=name).upsert_one(inc__ref_count=1)
+        self.modify(push__categories=category)
+
 
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
