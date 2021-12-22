@@ -61,7 +61,7 @@ class SearchableConnectionField(MongoengineConnectionField):
 
     def __init__(self, type, *args, **kwargs):
         # Attach our own, custom get_queryset
-        def get_queryset(self, model, info, **args):
+        def get_queryset(model, info, **args):
             search = args.pop('search', None)
             order_by = args.pop('order_by', None)
             # Construct query
