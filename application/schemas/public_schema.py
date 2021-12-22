@@ -141,27 +141,32 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         connection_class = CountableConnection
-        exclude_fields = ('lines',)
+        exclude_fields = ('lines', 'categories')
+
     progress = Field(Progress)
+    lines = List(PoemLine)
     location = String()
-    # Expose number of lines for convenience
-    num_lines = Int()
+    categories = List(Category)
+    num_lines = Int() # Expose number of lines for convenience
+
     # Define a custom resolver for the 'lines' field so that we can attach
     # line numbers dynamically
-    lines = List(PoemLine)
     def resolve_lines(parent, info):
         lines = parent.lines
         for i in range(len(lines)):
             lines[i].number = i
         return lines
+
     def resolve_num_lines(parent, info):
         return len(parent.lines)
+    
     # Only attach progress if a user is present
     def resolve_progress(parent, info):
         # Look up progress using poem and user
         user = info.context.user
         if (user):
             return ProgressModel.objects(user=user, poem=parent).first()
+    
     # The location last used to access a poem
     # Only resolve if user is present
     def resolve_location(parent, info):
