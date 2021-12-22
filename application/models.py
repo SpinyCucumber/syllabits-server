@@ -55,12 +55,6 @@ class Poem(Document):
     title = StringField()
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
-    # These fields are deprecated and will be phased out in favor of "smarter" collection handling
-    # The semantics of these fields are vague when poems can be included in multiple collections
-    next = ReferenceField('self')
-    prev = ReferenceField('self')
-    index = IntField()
-    collection = ReferenceField(Collection)
     # For testing
     # Assumes poem doesn't already belong to category
     def add_category(self, name):
