@@ -174,10 +174,6 @@ class Collection(MongoengineObjectType):
         model = CollectionModel
         interfaces = (Node,)
         connection_class = CountableConnection
-    # Field to retrieve a poem using its index
-    poem = Field(Poem, index=Int(required=True))
-    def resolve_poem(root, info, index):
-        return root.poems[index]
 
 class Query(ObjectType):
     node = Node.Field()
