@@ -59,6 +59,24 @@ This allows clients to search text indexes using GraphQL
 """
 class SearchableConnectionField(MongoengineConnectionField):
 
+    def __init__(self, type, *args, **kwargs):
+        # Attach our own, custom get_queryset
+        def get_queryset(self, model, info, **args):
+            search = args.pop('search', None)
+            order_by = args.pop('order_by', None)
+            # Construct query
+            query_set = model.objects
+            if search:
+                query_set = query_set.search_text(search)
+            if order_by:
+                if order_by == 'relevance':
+                    if search: query_set = query_set.order_by('$text_score')
+                else:
+                    query_set = query_set.order_by(order_by)
+            return query_set
+
+        super().__init__(type, *args, **kwargs, get_queryset=get_queryset)
+
     @property
     def args(self):
         # Override the default arguments to add that juicy search argument
@@ -76,20 +94,6 @@ class SearchableConnectionField(MongoengineConnectionField):
     @args.setter
     def args(self, args):
         self._base_args = args
-    
-    def get_queryset(self, model, info, **args):
-        search = args.pop('search', None)
-        order_by = args.pop('order_by', None)
-        # Construct query
-        query_set = model.objects
-        if search:
-            query_set = query_set.search_text(search)
-        if order_by:
-            if order_by == 'relevance':
-                if search: query_set = query_set.order_by('$text_score')
-            else:
-                query_set = query_set.order_by(order_by)
-        return query_set
 
 """
 Types/Queries
