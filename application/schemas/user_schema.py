@@ -39,7 +39,7 @@ class ResetProgress(Mutation):
         # Delete the progress associated with the poem and the current user
         ProgressModel.objects(user=user, poem=poem).delete()
         # Remove the poem from the user's in-progress and completed poems
-        user.update(pull__in_progress=poem, pull__completed=poem)
+        user.modify(pull__in_progress=poem, pull__completed=poem)
         return ResetProgress(ok=True)
 
 class Logout(Mutation):

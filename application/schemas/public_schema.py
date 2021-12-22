@@ -227,7 +227,7 @@ class PlayPoem(Mutation):
         user = info.context.user
         if (user):
             update_clause = {'$set': {f'locations.{str(poem.id)}': location}}
-            user.update(__raw__=update_clause)
+            user.modify(__raw__=update_clause)
         # Package result
         return PlayPoem(poem=poem, next=next, previous=previous)
 
@@ -263,9 +263,9 @@ class SubmitLine(Mutation):
             # If not, add in_progress
             complete = (progress.num_correct == len(poem.lines))
             if complete:
-                user.update(pull__in_progress=poem, add_to_set__completed=poem)
+                user.modify(pull__in_progress=poem, add_to_set__completed=poem)
             else:
-                user.update(add_to_set__in_progress=poem)
+                user.modify(add_to_set__in_progress=poem)
             
         # Construct response
         return SubmitLine(conflicts=conflicts, correct=correct)
