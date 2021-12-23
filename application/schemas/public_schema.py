@@ -24,11 +24,11 @@ from ..extensions import bcrypt
 Utility
 """
 
-"""
-Raised when accessing a field that the user is not authorized to access
-Ex. non-admin accessing poem keys
-"""
 class InsufficientPrivilegeError(Exception):
+    """
+    Raised when accessing a field that the user is not authorized to access
+    Ex. non-admin accessing poem keys
+    """
     pass
 
 def find_conflicts(key, answer):
@@ -46,11 +46,11 @@ def decode_location(location):
 def encode_location(location):
     return base64.b64encode(json.dumps(location))
 
-"""
-A connection that supports a 'totalCount' field
-totalCount field may become slow when working with large amounts of data
-"""
 class CountableConnection(Connection):
+    """
+    A connection that supports a 'totalCount' field
+    """
+
     class Meta:
         abstract = True
 
@@ -59,11 +59,11 @@ class CountableConnection(Connection):
     def resolve_total_count(root, info):
         return root.iterable.count()
 
-"""
-An extension of MongoengineConnectionField that supports a 'search' argument
-This allows clients to search text indexes using GraphQL
-"""
 class SearchableConnectionField(MongoengineConnectionField):
+    """
+    An extension of MongoengineConnectionField that supports a 'search' argument
+    This allows clients to search text indexes using GraphQL
+    """
 
     def __init__(self, type, *args, **kwargs):
         
@@ -222,19 +222,21 @@ class LocationType(Enum):
     DIRECT = 0
     COLLECTION = 1
 
-"""
-There are several ways to locate a poem.
-One way is to directly use the ID of a poem.
-Another way is to identity a collection and specify an index.
-Since GraphQL doesn't support polymorphic inputs, a simple solution is to use Strings,
-and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
-but this is the next best thing.
 
-This mutation takes a location and "resolves" it, returning a poem
-A location can also provide information about "next" and "previous" poems, which
-allows users to navigate
-"""
 class PlayPoem(Mutation):
+    """
+    There are several ways to locate a poem.
+    One way is to directly use the ID of a poem.
+    Another way is to identity a collection and specify an index.
+    Since GraphQL doesn't support polymorphic inputs, a simple solution is to use Strings,
+    and "bypass" the schema. It would be great if GraphQL could accomodate polymorphic inputs,
+    but this is the next best thing.
+
+    This mutation takes a location and "resolves" it, returning a poem
+    A location can also provide information about "next" and "previous" poems, which
+    allows users to navigate
+    """
+
     class Arguments:
         location = String(required=True)
     poem = Field(Poem)
@@ -368,10 +370,11 @@ class Register(Mutation):
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
 
-"""
-Creates a new access token using the user's refresh token
-"""
 class Refresh(Mutation):
+    """
+    Creates a new access token using the user's refresh token
+    """
+    
     ok = Boolean()
     result = String()
     def mutate(parent, info):
