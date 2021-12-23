@@ -185,7 +185,7 @@ class Query(ObjectType):
     node = Node.Field()
     collections = SearchableConnectionField(Collection)
     poems = SearchableConnectionField(Poem, categories__in=List(String))
-    categories = SearchableConnectionField(Category)
+    categories = SearchableConnectionField(Category, name__startswith=String())
 
 """
 Mutations
