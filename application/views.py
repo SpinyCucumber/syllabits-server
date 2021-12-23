@@ -1,18 +1,24 @@
-from flask_jwt_extended import get_current_user, create_refresh_token, set_refresh_cookies, verify_jwt_in_request
+from flask_jwt_extended import (
+    get_current_user,
+    create_access_token,
+    create_refresh_token,
+    set_refresh_cookies,
+    verify_jwt_in_request
+)
 from flask_jwt_extended.exceptions import RevokedTokenError
 from jwt.exceptions import InvalidTokenError
 from flask import current_app as app
 from .schemas import public_schema, user_schema
 from .flask_graphql import DynamicGraphQLView
 
-"""
-Request handling context.
-Contains information about each request, such as user.
-"""
 class Context:
+    """
+    Request handling context.
+    Contains information about each request, such as user.
+    """
 
     user = None
-    create_refresh_token = False
+    refresh_requested = False
     
     def verify_identity(self, refresh=False):
         locations = 'cookies' if refresh else None
@@ -23,6 +29,19 @@ class Context:
             self.user = get_current_user()
         except (RevokedTokenError, InvalidTokenError):
             self.user = None
+    
+    def create_access_token(self):
+        """
+        Generates new access token for the current user
+        """
+        return create_access_token(self.user)
+    
+    def request_refresh(self):
+        """
+        Requests a refresh token to be attached to the response
+        """
+        self.refresh_requested = True
+
 
 graphql = DynamicGraphQLView(graphiql=app.config["ENABLE_GRAPHIQL"])
 
@@ -36,7 +55,7 @@ def handle_request():
     response = graphql.dispatch_request(schema, context=context)
     # If a refresh token was requested, create a refresh token
     # for the current user and attach it as a cookie
-    if (context.create_refresh_token):
+    if (context.refresh_requested):
         token = create_refresh_token(context.user)
         set_refresh_cookies(response, token)
     return response

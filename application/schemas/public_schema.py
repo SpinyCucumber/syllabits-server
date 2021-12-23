@@ -4,7 +4,6 @@ from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID, Connection
 from graphene.types.argument import to_arguments
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
-from flask_jwt_extended import create_access_token
 from mongoengine.errors import NotUniqueError
 import base64
 import json
@@ -326,12 +325,11 @@ class Login(Mutation):
         try:
             user = UserModel.objects(email=input.email).get()
             if bcrypt.check_password_hash(user.password_hashed, input.password):
-                # Create new access token and set refresh token in cookies
-                token = create_access_token(user)
                 # Update context with new user and request a refresh token
                 # to be attached to the response
                 info.context.user = user
-                info.context.create_refresh_token = True
+                info.context.request_refresh()
+                token = info.context.create_access_token()
                 return Login(ok=True, result=token)
             else:
                 return Login(ok=False)
@@ -361,12 +359,11 @@ class Register(Mutation):
             password_hashed = bcrypt.generate_password_hash(input.password).decode('utf-8')
             user.password_hashed = password_hashed
             user.save()
-            # Create new access token
-            token = create_access_token(user)
             # Update context with new user and request a refresh token
             # to be attached to the response
             info.context.user = user
-            info.context.create_refresh_token = True
+            info.context.request_refresh()
+            token = info.context.create_access_token()
             return Register(ok=True, result=token)
         except NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
@@ -380,10 +377,9 @@ class Refresh(Mutation):
     def mutate(parent, info):
         # Verify identity using refresh token
         info.context.verify_identity(refresh=True)
-        user = info.context.user
         # If identity is verified, create new access token
-        if user:
-            token = create_access_token(user)
+        if info.context.user:
+            token = info.context.create_access_token()
             return Refresh(ok=True, result=token)
         return Refresh(ok=False)
 
