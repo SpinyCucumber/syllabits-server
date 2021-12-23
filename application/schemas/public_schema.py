@@ -25,6 +25,13 @@ from ..extensions import bcrypt
 Utility
 """
 
+"""
+Raised when accessing a field that the user is not authorized to access
+Ex. non-admin accessing poem keys
+"""
+class InsufficientPrivilegeError(Exception):
+    pass
+
 def find_conflicts(key, answer):
     # Compare the blocks one-by-one: if there is a mismatch, record the index.
     conflicts = []
@@ -136,9 +143,15 @@ class PoemLine(MongoengineObjectType):
         # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
         # See https://github.com/graphql-python/graphene-mongo/issues/162
         interfaces = (Node,)
-        # Be sure to exclude key (we don't want people automatically solving our poems!)
+        # Be sure to hide key (we don't want people automatically solving our poems!)
         exclude_fields = ('key',)
     number = Int()
+    key = String()
+    # To read the key, users must have admin status
+    def resolve_key(parent, info):
+        if getattr(info.context.user, 'is_admin', None):
+            return parent.key
+        raise InsufficientPrivilegeError('Not authorized')
 
 class Poem(MongoengineObjectType):
     class Meta:
