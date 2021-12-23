@@ -60,7 +60,8 @@ This allows clients to search text indexes using GraphQL
 class SearchableConnectionField(MongoengineConnectionField):
 
     def __init__(self, type, *args, **kwargs):
-        # Attach our own, custom get_queryset
+        
+        # Create our own custom get_queryset to process "search" and "order_by"
         def get_queryset(model, info, **args):
             search = args.pop('search', None)
             order_by = args.pop('order_by', None)
@@ -141,7 +142,7 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         connection_class = CountableConnection
-        exclude_fields = ('lines', 'categories')
+        exclude_fields = ('lines', 'categories') # Prefer category list instead of connection
 
     progress = Field(Progress)
     lines = List(PoemLine)
@@ -183,7 +184,7 @@ class Collection(MongoengineObjectType):
 class Query(ObjectType):
     node = Node.Field()
     collections = SearchableConnectionField(Collection)
-    poems = SearchableConnectionField(Poem)
+    poems = SearchableConnectionField(Poem, categories__in=List(String))
     categories = SearchableConnectionField(Category)
 
 """
