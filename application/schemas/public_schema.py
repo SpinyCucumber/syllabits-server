@@ -105,6 +105,9 @@ class Category(MongoengineObjectType):
         model = CategoryModel
         interfaces = (Node,)
         connection_class = CountableConnection
+        filter_fields = {
+            'name': ['startswith', 'nin', 'in']
+        }
 
 class ProgressLine(MongoengineObjectType):
     class Meta:
@@ -184,8 +187,9 @@ class Collection(MongoengineObjectType):
 class Query(ObjectType):
     node = Node.Field()
     collections = SearchableConnectionField(Collection)
+    # "categories__in" is difficult to implement with filters, so we manually specify type
     poems = SearchableConnectionField(Poem, categories__in=List(String))
-    categories = SearchableConnectionField(Category, name__startswith=String())
+    categories = SearchableConnectionField(Category)
 
 """
 Mutations
