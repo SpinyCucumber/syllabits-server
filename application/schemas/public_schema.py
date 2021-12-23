@@ -3,7 +3,7 @@ from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene.relay import Node, GlobalID, Connection
 from graphene.types.argument import to_arguments
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, JSONString, Enum)
 from mongoengine.errors import NotUniqueError
 import base64
 import json
@@ -101,6 +101,16 @@ class SearchableConnectionField(MongoengineConnectionField):
     @args.setter
     def args(self, args):
         self._base_args = args
+
+class CreateMutation(Mutation):
+    class Meta:
+        abstract = True
+    
+    @classmethod
+    def __init_subclass_with_meta__(cls, model=None, **options):
+        assert model, 'Model is required'
+        arguments = {'changes': List(JSONString)}
+        return super().__init_subclass_with_meta__(arguments=arguments, **options)
 
 """
 Types/Queries
@@ -374,7 +384,7 @@ class Refresh(Mutation):
     """
     Creates a new access token using the user's refresh token
     """
-    
+
     ok = Boolean()
     result = String()
     def mutate(parent, info):
