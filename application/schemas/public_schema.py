@@ -187,8 +187,8 @@ class Collection(MongoengineObjectType):
 class Query(ObjectType):
     node = Node.Field()
     collections = SearchableConnectionField(Collection)
-    # "categories__in" is difficult to implement with filters, so we manually specify type
-    poems = SearchableConnectionField(Poem, categories__in=List(String))
+    # "categories__all" is difficult to implement with filters, so we manually specify type
+    poems = SearchableConnectionField(Poem, categories__all=List(String))
     categories = SearchableConnectionField(Category)
 
 """
