@@ -305,7 +305,7 @@ class SubmitLine(Mutation):
         line = poem.lines[input.lineNum]
         # Determine if correct
         conflicts = None
-        if len(line.key) == line(input.answer):
+        if len(line.key) == len(input.answer):
             conflicts = find_conflicts(line.key, input.answer)
             correct = (len(conflicts) == 0)
         else:
