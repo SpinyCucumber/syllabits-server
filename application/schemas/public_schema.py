@@ -161,11 +161,15 @@ class PoemLine(MongoengineObjectType):
         exclude_fields = ('key',)
     number = Int()
     key = List(String)
+    num_feet = Int()
     # To read the key, users must have admin status
     def resolve_key(parent, info):
         if getattr(info.context.user, 'is_admin', None):
             return parent.key
         raise InsufficientPrivilegeError('Not authorized')
+    # Also expose number of feet so client knows how many slots to render
+    def resolve_num_feet(parent, info):
+        return len(parent.key)
 
 class Poem(MongoengineObjectType):
     class Meta:
