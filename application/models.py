@@ -36,17 +36,9 @@ class Collection(Document):
     poems = ListField(ReferenceField('Poem'))
     primary = BooleanField(default=False)
 
-class FootType(Enum):
-    IAMB = 'i'
-    TROCHEE = 't'
-    Dactyl = 'd'
-    Anapest = 'a'
-    Spondee = 's'
-    Pyrrhic = 'p'
-
 class PoemLine(EmbeddedDocument):
     text = StringField()
-    key = ListField(EnumField(FootType))
+    key = ListField(StringField(max_length=1))
     stanza_break = BooleanField(default=False)
 
 class Poem(Document):
