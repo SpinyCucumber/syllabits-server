@@ -290,7 +290,7 @@ class PlayPoem(Mutation):
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
     lineNum = Int()
-    answer = String()
+    answer = List(String)
 
 class SubmitLine(Mutation):
     class Arguments:
