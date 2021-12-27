@@ -9,9 +9,7 @@ from mongoengine.fields import (
     IntField,
     DateTimeField,
     MapField,
-    EnumField,
 )
-from enum import Enum
 
 """
 Categories are like "tags" used to describe poems and collections.
