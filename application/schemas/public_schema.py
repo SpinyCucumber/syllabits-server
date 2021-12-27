@@ -31,11 +31,16 @@ class InsufficientPrivilegeError(Exception):
     """
     pass
 
+"""
+Finds differences between a submitted answer and a key
+Assumes the answer and the key are the same length
+Returns a list of indicies of differences
+"""
 def find_conflicts(key, answer):
     # Compare the blocks one-by-one: if there is a mismatch, record the index.
     conflicts = []
-    length = min(len(key), len(answer))
-    for i in range(length):
+    assert len(key) == len(answer)
+    for i in range(len(key)):
         if (key[i] != answer[i]):
             conflicts.append(i)
     return conflicts
@@ -299,8 +304,12 @@ class SubmitLine(Mutation):
         poem = Node.get_node_from_global_id(info, input.poemID)
         line = poem.lines[input.lineNum]
         # Determine if correct
-        conflicts = find_conflicts(line.key, input.answer)
-        correct = (len(conflicts) == 0)
+        conflicts = None
+        if len(line.key) == line(input.answer):
+            conflicts = find_conflicts(line.key, input.answer)
+            correct = (len(conflicts) == 0)
+        else:
+            correct = False
         # If the user is logged in, update their progress
         user = info.context.user
         if (user):
