@@ -95,7 +95,7 @@ class User(Document):
     locations = MapField(StringField())
 
 class ProgressLine(EmbeddedDocument):
-    answer = StringField()
+    answer = ListField(StringField())
     correct = BooleanField()
 
 class Progress(Document):
