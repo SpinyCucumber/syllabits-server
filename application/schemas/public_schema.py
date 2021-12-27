@@ -155,7 +155,7 @@ class PoemLine(MongoengineObjectType):
         # Be sure to hide key (we don't want people automatically solving our poems!)
         exclude_fields = ('key',)
     number = Int()
-    key = String()
+    key = List(String)
     # To read the key, users must have admin status
     def resolve_key(parent, info):
         if getattr(info.context.user, 'is_admin', None):

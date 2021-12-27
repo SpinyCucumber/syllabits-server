@@ -9,7 +9,9 @@ from mongoengine.fields import (
     IntField,
     DateTimeField,
     MapField,
+    EnumField,
 )
+from enum import Enum
 
 """
 Categories are like "tags" used to describe poems and collections.
@@ -34,9 +36,17 @@ class Collection(Document):
     poems = ListField(ReferenceField('Poem'))
     primary = BooleanField(default=False)
 
+class FootType(Enum):
+    IAMB = 'i'
+    TROCHEE = 't'
+    Dactyl = 'd'
+    Anapest = 'a'
+    Spondee = 's'
+    Pyrrhic = 'p'
+
 class PoemLine(EmbeddedDocument):
     text = StringField()
-    key = StringField()
+    key = ListField(EnumField(FootType))
     stanza_break = BooleanField(default=False)
 
 class Poem(Document):
