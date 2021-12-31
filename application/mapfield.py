@@ -21,3 +21,18 @@ class Entry(ObjectType):
         return super(Entry, cls).__init_subclass_with_meta__(
             _meta=_meta, **options
         )
+
+entry_type_lookup = {}
+
+def get_entry_type(value_type):
+    entry_type = entry_type_lookup[value_type]
+    # Construct new entry type if necessary
+    if not entry_type:
+        entry_type = Entry.create_type(f'{value_type.__name__}Entry', value_type)
+        entry_type_lookup[value_type] = entry_type
+    return entry_type
+
+class MapField(Field):
+    def __init__(self, value_type, **kw_args):
+        # Define field type as entry type
+        super(Field, self).__init__(get_entry_type(value_type), **kw_args)
