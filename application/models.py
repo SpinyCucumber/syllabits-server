@@ -1,4 +1,5 @@
 from mongoengine import Document, EmbeddedDocument
+from bson.objectid import ObjectId
 from mongoengine.fields import (
     ObjectIdField,
     EmailField,
@@ -37,7 +38,7 @@ class Collection(Document):
     primary = BooleanField(default=False)
 
 class PoemLine(EmbeddedDocument):
-    id = ObjectIdField()
+    id = ObjectIdField(primary_key=True, default=ObjectId)
     """
     Each poem line has a unique ID. This gives lines a persistent "name" so we can avoid referencing them by
     index, which is volatile as lines can be created and destroyed.
