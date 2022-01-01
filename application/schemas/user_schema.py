@@ -1,11 +1,12 @@
 from graphene_mongo import MongoengineObjectType
-from graphene import (Schema, Mutation, ObjectType, InputObjectType, Boolean, Field)
+from graphene import (Schema, String, Mutation, ObjectType, InputObjectType, Boolean, Field)
+from flask_jwt_extended import get_jwt
+from datetime import datetime
 from graphene.relay import GlobalID, Node
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
 from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
-from flask_jwt_extended import get_jwt
-from datetime import datetime
+from ..graphene_mapfield import MapField
 
 class User(MongoengineObjectType):
     class Meta:
@@ -13,6 +14,7 @@ class User(MongoengineObjectType):
         interfaces = (Node,)
         # Definitely don't want to expose this
         exclude_fields = ('password_hashed',)
+    locations = MapField(String)
 
 class Query(PublicQuery, ObjectType):
     # Reference to the current user

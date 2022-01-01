@@ -17,6 +17,7 @@ from ..models import (
     ProgressLine as ProgressLineModel,
 )
 from ..extensions import bcrypt
+from ..graphene_mapfield import MapField
 
 """
 Utility
@@ -136,7 +137,7 @@ class ProgressLine(MongoengineObjectType):
 class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
-        interfaces = (Node,)
+    lines = MapField(ProgressLine)
 
 class PoemLine(MongoengineObjectType):
     class Meta:
