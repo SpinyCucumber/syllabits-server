@@ -75,7 +75,6 @@ class PoemLine(MongoengineObjectType):
         # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
         # See https://github.com/graphql-python/graphene-mongo/issues/162
         interfaces = (Node,)
-    number = Int()
     num_feet = Int()
     # To read the key, users must have admin status
     def resolve_key(parent, info):
