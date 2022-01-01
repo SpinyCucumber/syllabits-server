@@ -93,17 +93,9 @@ class Poem(MongoengineObjectType):
 
     progress = Field(Progress)
     lines = List(PoemLine)
-    location = String()
     categories = List(Category)
+    location = String()
     num_lines = Int() # Expose number of lines for convenience
-
-    # Define a custom resolver for the 'lines' field so that we can attach
-    # line numbers dynamically
-    def resolve_lines(parent, info):
-        lines = parent.lines
-        for i in range(len(lines)):
-            lines[i].number = i
-        return lines
 
     def resolve_num_lines(parent, info):
         return len(parent.lines)
