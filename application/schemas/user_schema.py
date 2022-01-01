@@ -1,12 +1,11 @@
 from graphene_mongo import MongoengineObjectType
-from graphene import (Schema, String, Mutation, ObjectType, InputObjectType, Boolean, Field)
-from flask_jwt_extended import get_jwt
+from graphene import (Node, GlobalID, Schema, String, Mutation, ObjectType, InputObjectType, Boolean, Field)
 from datetime import datetime
-from graphene.relay import GlobalID, Node
+from flask_jwt_extended import get_jwt
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
 from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
-from ..graphene_mapfield import MapField
+from ..utilities import MapField
 
 class User(MongoengineObjectType):
     class Meta:
