@@ -17,7 +17,7 @@ from ..models import (
     Progress as ProgressModel,
     ProgressLine as ProgressLineModel,
 )
-
+from ..graphene_mapfield import MapField
 from ..extensions import bcrypt
 
 """
@@ -133,23 +133,13 @@ class Category(MongoengineObjectType):
 class ProgressLine(MongoengineObjectType):
     class Meta:
         model = ProgressLineModel
-        interfaces = (Node,)
-    # Also have to include number
-    number = Int()
 
 class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
         interfaces = (Node,)
         exclude_fields = ('lines',)
-    # The lines of the poem document are actually a dictionary, with the keys
-    # being strings that correspond to the line indicies. We must convert into an array
-    lines = List(ProgressLine)
-    def resolve_lines(parent, info):
-        def map(key, value):
-            value.number = int(key)
-            return value
-        return [ map(*entry) for entry in parent.lines.items() ]
+    lines = MapField(ProgressLine)
 
 class PoemLine(MongoengineObjectType):
     class Meta:
