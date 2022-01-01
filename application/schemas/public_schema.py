@@ -70,11 +70,16 @@ class Progress(MongoengineObjectType):
     lines = MapField(ProgressLine)
 
 class PoemLine(MongoengineObjectType):
+    """
+    Semantically, inheriting Node means an object is "globally identifiable" with its ID.
+    This is not possible with poems, as poem lines are embedded inside poems and are only unique within that poem.
+    So, we don't inherit Node.
+    """
     class Meta:
         model = PoemLineModel
         # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
         # See https://github.com/graphql-python/graphene-mongo/issues/162
-        interfaces = (Node,)
+        # interfaces = (Node,)
     num_feet = Int()
     # To read the key, users must have admin status
     def resolve_key(parent, info):
@@ -197,7 +202,7 @@ class PlayPoem(Mutation):
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
-    lineID = GlobalID()
+    lineID = String()
     answer = List(String)
 
 class SubmitLine(Mutation):
@@ -209,10 +214,8 @@ class SubmitLine(Mutation):
 
     def mutate(parent, info, input):
         # Lookup poem and line
-        # We have to manually convert the GlobalID back into an actual line ID, because Mongoengine sucks
         poem = Node.get_node_from_global_id(info, input.poemID)
-        lineID = Node.from_global_id(input.lineID)[1]
-        line = poem.lines.get(id=lineID)
+        line = poem.lines.get(id=input.lineID)
         # Determine if correct
         conflicts = None
         if len(line.key) == len(input.answer):
@@ -225,7 +228,7 @@ class SubmitLine(Mutation):
         if (user):
             progress_query = ProgressModel.objects(user=user, poem=poem)
             # Construct update clause and upsert progress (insert or update)
-            update_clause = {'$set': {f'lines.{lineID}': {'answer': input.answer, 'correct': correct}}}
+            update_clause = {'$set': {f'lines.{input.lineID}': {'answer': input.answer, 'correct': correct}}}
             if (correct): update_clause['$inc'] = {'num_correct': 1}
             progress = progress_query.upsert_one(__raw__=update_clause)
             # Determine if poem is complete
