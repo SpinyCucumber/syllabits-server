@@ -1,7 +1,10 @@
-from graphene import Field, String, List
+from graphene import Field, String, List, NonNull, Dynamic
 from graphene.types.objecttype import ObjectType
 from graphene.utils.thenables import maybe_thenable
+from graphene_mongo.utils import get_field_description
+from graphene_mongo.converter import convert_mongoengine_field
 from functools import partial
+import mongoengine
 
 entry_type_lookup = {}
 
@@ -38,3 +41,24 @@ class MapField(Field):
     def get_resolver(self, parent_resolver):
         resolver = super(MapField, self).get_resolver(parent_resolver)
         return partial(self.map_resolver, resolver)
+
+# Associate Mongoengine MapFields with our custom MapField for automatic conversion
+@convert_mongoengine_field.register(mongoengine.MapField)
+def convert_mapfield(field, registry=None):
+    base_type = convert_mongoengine_field(field.field, registry=registry)
+    if isinstance(base_type, (Dynamic)):
+        base_type = base_type.get_type()
+        if base_type is None:
+            return
+        base_type = base_type._type
+    # Non-relationship field
+    relations = (mongoengine.ReferenceField, mongoengine.EmbeddedDocumentField)
+    if not isinstance(base_type, (List, NonNull)) and not isinstance(
+        field.field, relations
+    ):
+        base_type = type(base_type)
+    return MapField(
+        value_type=base_type,
+        description=get_field_description(field, registry),
+        required = field.required
+    )

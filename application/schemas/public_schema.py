@@ -1,10 +1,8 @@
 from collections import OrderedDict
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
-from graphene_mongo.utils import get_field_description
-from graphene_mongo.converter import convert_mongoengine_field
 from graphene.relay import Node, GlobalID, Connection
 from graphene.types.argument import to_arguments
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, NonNull, JSONString, Enum, Dynamic, Boolean)
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, JSONString, Enum, Boolean)
 import mongoengine
 import base64
 import json
@@ -18,33 +16,11 @@ from ..models import (
     Progress as ProgressModel,
     ProgressLine as ProgressLineModel,
 )
-from ..graphene_mapfield import MapField
 from ..extensions import bcrypt
 
 """
 Utility
 """
-
-# Associate Mongoengine MapFields with our custom MapField for automatic conversion
-@convert_mongoengine_field.register(mongoengine.MapField)
-def convert_mapfield(field, registry=None):
-    base_type = convert_mongoengine_field(field.field, registry=registry)
-    if isinstance(base_type, (Dynamic)):
-        base_type = base_type.get_type()
-        if base_type is None:
-            return
-        base_type = base_type._type
-    # Non-relationship field
-    relations = (mongoengine.ReferenceField, mongoengine.EmbeddedDocumentField)
-    if not isinstance(base_type, (List, NonNull)) and not isinstance(
-        field.field, relations
-    ):
-        base_type = type(base_type)
-    return MapField(
-        value_type=base_type,
-        description=get_field_description(field, registry),
-        required = field.required
-    )
 
 class InsufficientPrivilegeError(Exception):
     """
