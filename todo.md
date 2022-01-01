@@ -3,6 +3,7 @@
 - [ ] README (more info)
 - [x] Mutation logic
 - [x] Login/Register mutations
+- [ ] Provide fix to MongoengineConnectionField
 - [ ] Categories
     - Literary movement, historical period, themes, topics, images, etc.
     - Choose some initial tags when registering
