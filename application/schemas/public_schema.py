@@ -1,7 +1,5 @@
-from collections import OrderedDict
-from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
+from graphene_mongo import MongoengineObjectType
 from graphene.relay import Node, GlobalID, Connection
-from graphene.types.argument import to_arguments
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, JSONString, Enum, Boolean)
 import mongoengine
 import base64
@@ -17,7 +15,7 @@ from ..models import (
     ProgressLine as ProgressLineModel,
 )
 from ..extensions import bcrypt
-from ..graphene_mapfield import MapField
+from ..utilities import MapField, SearchableConnectionField
 
 """
 Utility
@@ -63,48 +61,7 @@ class CountableConnection(Connection):
     def resolve_total_count(root, info):
         return root.iterable.count()
 
-class SearchableConnectionField(MongoengineConnectionField):
-    """
-    An extension of MongoengineConnectionField that supports a 'search' argument
-    This allows clients to search text indexes using GraphQL
-    """
 
-    def __init__(self, type, *args, **kwargs):
-        
-        # Create our own custom get_queryset to process "search" and "order_by"
-        def get_queryset(model, info, **args):
-            search = args.pop('search', None)
-            order_by = args.pop('order_by', None)
-            # Construct query
-            query_set = model.objects(**args)
-            if search:
-                query_set = query_set.search_text(search)
-            if order_by:
-                if order_by == 'relevance':
-                    if search: query_set = query_set.order_by('$text_score')
-                else:
-                    query_set = query_set.order_by(order_by)
-            return query_set
-
-        super().__init__(type, *args, **kwargs, get_queryset=get_queryset)
-
-    @property
-    def args(self):
-        # Override the default arguments to add that juicy search argument
-        return to_arguments(
-            self._base_args or OrderedDict(),
-            {
-                **self.field_args,
-                **self.filter_args,
-                **self.reference_args,
-                'search': String(),
-                'order_by': String()
-            }
-        )
-    
-    @args.setter
-    def args(self, args):
-        self._base_args = args
 
 class CreateMutation(Mutation):
     class Meta:
