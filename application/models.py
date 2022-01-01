@@ -1,6 +1,7 @@
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     EmailField,
+    EmbeddedDocumentField,
     EmbeddedDocumentListField,
     ListField,
     StringField,
@@ -102,7 +103,7 @@ class Progress(Document):
     meta = {'collection': 'progress', 'indexes': [('user', 'poem')]}
     user = ReferenceField(User)
     poem = ReferenceField(Poem)
-    lines = EmbeddedDocumentListField(ProgressLine)
+    lines = MapField(EmbeddedDocumentField(ProgressLine))
     num_correct = IntField()
 
 """
