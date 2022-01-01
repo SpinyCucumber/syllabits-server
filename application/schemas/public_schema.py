@@ -145,10 +145,7 @@ class PoemLine(MongoengineObjectType):
         # It would be nice if this wasn't a node. But, EmbeddedDocumentListField forces this.
         # See https://github.com/graphql-python/graphene-mongo/issues/162
         interfaces = (Node,)
-        # Be sure to hide key (we don't want people automatically solving our poems!)
-        exclude_fields = ('key',)
     number = Int()
-    key = List(String)
     num_feet = Int()
     # To read the key, users must have admin status
     def resolve_key(parent, info):
@@ -164,7 +161,6 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         connection_class = CountableConnection
-        exclude_fields = ('lines', 'categories') # Prefer category list instead of connection
 
     progress = Field(Progress)
     lines = List(PoemLine)
