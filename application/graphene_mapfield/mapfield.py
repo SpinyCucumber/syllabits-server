@@ -1,37 +1,20 @@
 from graphene import Field, String, List
-from graphene.types.objecttype import ObjectType, ObjectTypeOptions
+from graphene.types.objecttype import ObjectType
 from graphene.utils.thenables import maybe_thenable
 from functools import partial
-from collections import OrderedDict
-
-class EntryOptions(ObjectTypeOptions):
-    value_type = None
-
-class Entry(ObjectType):
-    class Meta:
-        abstract = True
-    
-    @classmethod
-    def __init_subclass_with_meta__(cls, value_type=None, **options):
-        # Construct meta
-        _meta = EntryOptions(cls)
-        _meta.value_type = value_type
-        _meta.fields = OrderedDict([
-            ("key", Field(String)),
-            ("value", Field(value_type))
-        ])
-        return super(Entry, cls).__init_subclass_with_meta__(
-            _meta=_meta, **options
-        )
 
 entry_type_lookup = {}
 
 def get_entry_type(value_type):
-    entry_type = entry_type_lookup.get(value_type, None)
+    name = value_type._meta.name
+    entry_type = entry_type_lookup.get(name, None)
     # Construct new entry type if necessary
     if not entry_type:
-        entry_type = Entry.create_type(f'{value_type.__name__}Entry', value_type=value_type)
-        entry_type_lookup[value_type] = entry_type
+        class Entry(ObjectType):
+            key = String()
+            value = Field(value_type)
+        entry_type = type(f'{name}Entry', (Entry,), {})
+        entry_type_lookup[name] = entry_type
     return entry_type
 
 class MapField(Field):

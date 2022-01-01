@@ -1,10 +1,13 @@
 from collections import OrderedDict
 from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
+from graphene_mongo.utils import get_field_description
+from graphene_mongo.converter import convert_mongoengine_field
 from graphene.relay import Node, GlobalID, Connection
 from graphene.types.argument import to_arguments
 from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, JSONString, Enum)
 from mongoengine.errors import NotUniqueError
+from mongoengine.fields import MapField as MapFieldModel
 import base64
 import json
 
@@ -24,6 +27,16 @@ from ..extensions import bcrypt
 Utility
 """
 
+# Associate Mongoengine MapFields with our custom MapField for automatic conversion
+@convert_mongoengine_field.register(MapFieldModel)
+def convert_mapfield(field, registry=None):
+    base_type = convert_mongoengine_field(field.field, registry=registry)
+    return MapField(
+        value_type=type(base_type),
+        description=get_field_description(field, registry),
+        required = field.required
+    )
+
 class InsufficientPrivilegeError(Exception):
     """
     Raised when accessing a field that the user is not authorized to access
@@ -31,12 +44,12 @@ class InsufficientPrivilegeError(Exception):
     """
     pass
 
-"""
-Finds differences between a submitted answer and a key
-Assumes the answer and the key are the same length
-Returns a list of indicies of differences
-"""
 def find_conflicts(key, answer):
+    """
+    Finds differences between a submitted answer and a key
+    Assumes the answer and the key are the same length
+    Returns a list of indicies of differences
+    """
     # Compare the blocks one-by-one: if there is a mismatch, record the index.
     conflicts = []
     assert len(key) == len(answer)
@@ -115,6 +128,7 @@ class CreateMutation(Mutation):
     def __init_subclass_with_meta__(cls, model=None, **options):
         assert model, 'Model is required'
         arguments = {'changes': List(JSONString)}
+        # TODO
         return super().__init_subclass_with_meta__(arguments=arguments, **options)
 
 """
