@@ -71,11 +71,20 @@ class Poem(Document):
     title = StringField()
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
+
     # For testing
     # Assumes poem doesn't already belong to category
     def add_category(self, name):
         category = Category.objects(name=name).upsert_one(inc__ref_count=1)
         self.modify(push__categories=category)
+    
+    def __init__(self, **values):
+        # We automatically create an initial ordering based on order of line list
+        order = 0
+        for line in values['lines']:
+            line.order = order
+            order += 1
+        super().__init__(**values)
 
 
 class User(Document):
