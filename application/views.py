@@ -9,7 +9,7 @@ from flask_jwt_extended.exceptions import RevokedTokenError
 from jwt.exceptions import InvalidTokenError
 from flask import current_app as app
 from .schemas import public_schema, user_schema
-from .flask_graphql import DynamicGraphQLView
+from .utilities import DynamicGraphQLView
 
 class Context:
     """
