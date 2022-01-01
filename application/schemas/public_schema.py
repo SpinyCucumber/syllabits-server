@@ -146,7 +146,6 @@ class LocationType(Enum):
     DIRECT = 0
     COLLECTION = 1
 
-
 class PlayPoem(Mutation):
     """
     There are several ways to locate a poem.
@@ -198,7 +197,7 @@ class PlayPoem(Mutation):
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
-    lineID = String()
+    lineID = GlobalID()
     answer = List(String)
 
 class SubmitLine(Mutation):
@@ -210,8 +209,10 @@ class SubmitLine(Mutation):
 
     def mutate(parent, info, input):
         # Lookup poem and line
+        # We have to manually convert the GlobalID back into an actual line ID, because Mongoengine sucks
         poem = Node.get_node_from_global_id(info, input.poemID)
-        line = poem.lines.get(id=input.lineID)
+        lineID = Node.from_global_id(input.lineID)[1]
+        line = poem.lines.get(id=lineID)
         # Determine if correct
         conflicts = None
         if len(line.key) == len(input.answer):
@@ -224,7 +225,7 @@ class SubmitLine(Mutation):
         if (user):
             progress_query = ProgressModel.objects(user=user, poem=poem)
             # Construct update clause and upsert progress (insert or update)
-            update_clause = {'$set': {f'lines.{input.lineID}': {'answer': input.answer, 'correct': correct}}}
+            update_clause = {'$set': {f'lines.{lineID}': {'answer': input.answer, 'correct': correct}}}
             if (correct): update_clause['$inc'] = {'num_correct': 1}
             progress = progress_query.upsert_one(__raw__=update_clause)
             # Determine if poem is complete
