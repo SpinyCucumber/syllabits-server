@@ -198,7 +198,7 @@ class PlayPoem(Mutation):
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
-    lineNum = Int()
+    lineID = String()
     answer = List(String)
 
 class SubmitLine(Mutation):
@@ -211,7 +211,7 @@ class SubmitLine(Mutation):
     def mutate(parent, info, input):
         # Lookup poem and line
         poem = Node.get_node_from_global_id(info, input.poemID)
-        line = poem.lines[input.lineNum]
+        line = poem.lines.get(id=input.lineID)
         # Determine if correct
         conflicts = None
         if len(line.key) == len(input.answer):
@@ -224,7 +224,7 @@ class SubmitLine(Mutation):
         if (user):
             progress_query = ProgressModel.objects(user=user, poem=poem)
             # Construct update clause and upsert progress (insert or update)
-            update_clause = {'$set': {f'lines.{input.lineNum}': {'answer': input.answer, 'correct': correct}}}
+            update_clause = {'$set': {f'lines.{input.lineID}': {'answer': input.answer, 'correct': correct}}}
             if (correct): update_clause['$inc'] = {'num_correct': 1}
             progress = progress_query.upsert_one(__raw__=update_clause)
             # Determine if poem is complete
