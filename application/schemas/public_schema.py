@@ -95,6 +95,7 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         connection_class = CountableConnection
+        searchable = True
 
     progress = Field(Progress)
     lines = List(PoemLine)
@@ -124,6 +125,7 @@ class Collection(MongoengineObjectType):
         model = CollectionModel
         interfaces = (Node,)
         connection_class = CountableConnection
+        searchable = True
 
 class Query(ObjectType):
     node = Node.Field()
