@@ -1,13 +1,11 @@
 from collections import OrderedDict
-from graphene.types.scalars import Boolean
 from graphene_mongo import MongoengineObjectType, MongoengineConnectionField
 from graphene_mongo.utils import get_field_description
 from graphene_mongo.converter import convert_mongoengine_field
 from graphene.relay import Node, GlobalID, Connection
 from graphene.types.argument import to_arguments
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, JSONString, Enum)
-from mongoengine.errors import NotUniqueError
-from mongoengine.fields import MapField as MapFieldModel
+from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, NonNull, JSONString, Enum, Dynamic, Boolean)
+import mongoengine
 import base64
 import json
 
@@ -28,11 +26,22 @@ Utility
 """
 
 # Associate Mongoengine MapFields with our custom MapField for automatic conversion
-@convert_mongoengine_field.register(MapFieldModel)
+@convert_mongoengine_field.register(mongoengine.MapField)
 def convert_mapfield(field, registry=None):
     base_type = convert_mongoengine_field(field.field, registry=registry)
+    if isinstance(base_type, (Dynamic)):
+        base_type = base_type.get_type()
+        if base_type is None:
+            return
+        base_type = base_type._type
+    # Non-relationship field
+    relations = (mongoengine.ReferenceField, mongoengine.EmbeddedDocumentField)
+    if not isinstance(base_type, (List, NonNull)) and not isinstance(
+        field.field, relations
+    ):
+        base_type = type(base_type)
     return MapField(
-        value_type=type(base_type),
+        value_type=base_type,
         description=get_field_description(field, registry),
         required = field.required
     )
@@ -152,8 +161,6 @@ class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
         interfaces = (Node,)
-        exclude_fields = ('lines',)
-    lines = MapField(ProgressLine)
 
 class PoemLine(MongoengineObjectType):
     class Meta:
@@ -394,7 +401,7 @@ class Register(Mutation):
             info.context.request_refresh()
             token = info.context.create_access_token()
             return Register(ok=True, result=token)
-        except NotUniqueError:
+        except mongoengine.errors.NotUniqueError:
             return Register(ok=False, error=RegisterError.USER_EXISTS)
 
 class Refresh(Mutation):
