@@ -5,7 +5,6 @@ from flask_jwt_extended import get_jwt
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
 from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
-from ..utilities import MapField
 
 class User(MongoengineObjectType):
     class Meta:
@@ -13,7 +12,6 @@ class User(MongoengineObjectType):
         interfaces = (Node,)
         # Definitely don't want to expose this
         exclude_fields = ('password_hashed',)
-    locations = MapField(String)
 
 class Query(PublicQuery, ObjectType):
     # Reference to the current user

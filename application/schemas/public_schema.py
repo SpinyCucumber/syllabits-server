@@ -1,5 +1,6 @@
 from graphene_mongo import MongoengineObjectType
 from graphene import (Node, GlobalID, ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, Boolean)
+from graphene_mongo import MongoengineConnectionField
 import mongoengine
 import base64
 import json
@@ -14,7 +15,7 @@ from ..models import (
     ProgressLine as ProgressLineModel,
 )
 from ..extensions import bcrypt
-from ..utilities import MapField, SearchableConnectionField, CountableConnection
+from ..utilities import CountableConnection
 
 """
 Utility
@@ -67,7 +68,6 @@ class ProgressLine(MongoengineObjectType):
 class Progress(MongoengineObjectType):
     class Meta:
         model = ProgressModel
-    lines = MapField(ProgressLine)
 
 class PoemLine(MongoengineObjectType):
     """
@@ -127,10 +127,10 @@ class Collection(MongoengineObjectType):
 
 class Query(ObjectType):
     node = Node.Field()
-    collections = SearchableConnectionField(Collection)
+    collections = MongoengineConnectionField(Collection)
     # "categories__all" is difficult to implement with filters, so we manually specify type
-    poems = SearchableConnectionField(Poem, categories__all=List(String))
-    categories = SearchableConnectionField(Category)
+    poems = MongoengineConnectionField(Poem, categories__all=List(String))
+    categories = MongoengineConnectionField(Category)
 
 """
 Mutations
