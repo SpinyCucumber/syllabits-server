@@ -1,5 +1,6 @@
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
+    ObjectIdField,
     EmailField,
     EmbeddedDocumentField,
     EmbeddedDocumentListField,
@@ -36,8 +37,21 @@ class Collection(Document):
     primary = BooleanField(default=False)
 
 class PoemLine(EmbeddedDocument):
+    id = ObjectIdField()
+    """
+    Each poem line has a unique ID. This gives lines a persistent "name" so we can avoid referencing them by
+    index, which is volatile as lines can be created and destroyed.
+    """
+    order = IntField()
+    """
+    We impose a "virtual ordering" on the poem lines to allow them to be rearranged easily.
+    The virtual ordering happens all client-side.
+    """
     text = StringField()
     key = ListField(StringField(max_length=1))
+    """
+    The line key is an array of characters where each character corresponds to a type of foot.
+    """
     stanza_break = BooleanField(default=False)
 
 class Poem(Document):
