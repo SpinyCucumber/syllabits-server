@@ -1,6 +1,5 @@
 from graphene_mongo import MongoengineObjectType
-from graphene.relay import Node, GlobalID, Connection
-from graphene import (ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, JSONString, Enum, Boolean)
+from graphene import (Node, GlobalID, ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, Boolean)
 import mongoengine
 import base64
 import json
@@ -15,7 +14,7 @@ from ..models import (
     ProgressLine as ProgressLineModel,
 )
 from ..extensions import bcrypt
-from ..utilities import MapField, SearchableConnectionField
+from ..utilities import MapField, SearchableConnectionField, CountableConnection
 
 """
 Utility
@@ -47,32 +46,6 @@ def decode_location(location):
 
 def encode_location(location):
     return base64.b64encode(json.dumps(location))
-
-class CountableConnection(Connection):
-    """
-    A connection that supports a 'totalCount' field
-    """
-
-    class Meta:
-        abstract = True
-
-    total_count = Int()
-
-    def resolve_total_count(root, info):
-        return root.iterable.count()
-
-
-
-class CreateMutation(Mutation):
-    class Meta:
-        abstract = True
-    
-    @classmethod
-    def __init_subclass_with_meta__(cls, model=None, **options):
-        assert model, 'Model is required'
-        arguments = {'changes': List(JSONString)}
-        # TODO
-        return super().__init_subclass_with_meta__(arguments=arguments, **options)
 
 """
 Types/Queries
