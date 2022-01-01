@@ -28,7 +28,7 @@ class MapField(Field):
         super(MapField, self).__init__(_type, **kw_args)
 
     @classmethod
-    def resolve_connection(cls, resolved):
+    def resolve_map(cls, resolved):
         # "Flatten" map
         return [{'key': k, 'value': v} for (k, v) in resolved.items()]
 
