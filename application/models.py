@@ -12,15 +12,15 @@ from mongoengine.fields import (
     MapField,
 )
 
-"""
-Categories are like "tags" used to describe poems and collections.
-Collections are more rigid when compared to categories: they have an order and tend not to change.
-Collections are intended to be used for cataloging, assignments, etc.
-In other words, collections are more "curated"
-Categories are used to describe groups of similar poems. For example, a category could describe poems
-that share a common theme, were written in the same time period, etc.
-"""
 class Category(Document):
+    """
+    Categories are like "tags" used to describe poems and collections.
+    Collections are more rigid when compared to categories: they have an order and tend not to change.
+    Collections are intended to be used for cataloging, assignments, etc.
+    In other words, collections are more "curated"
+    Categories are used to describe groups of similar poems. For example, a category could describe poems
+    that share a common theme, were written in the same time period, etc.
+    """
     meta = {'collection': 'category'}
     name = StringField(primary_key=True)
     ref_count = IntField()
@@ -28,10 +28,10 @@ class Category(Document):
 class Collection(Document):
     meta = {'collection': 'collection'}
     title = StringField()
+    categories = ListField(ReferenceField(Category))
     """
     Collections can have categories just like poems.
     """
-    categories = ListField(ReferenceField(Category))
     poems = ListField(ReferenceField('Poem'))
     primary = BooleanField(default=False)
 
@@ -68,14 +68,13 @@ class User(Document):
     email = EmailField(unique=True)
     is_admin = BooleanField()
     password_hashed = StringField()
+    saved = ListField(ReferenceField(Poem))
     """
-    A user can have multiple relationships with a poem, which can overlap, and have
-    different rules for transitioning between them.
     A user can 'save' poems. This is a simple, general-purpose feature which allows
     users to remember poems (that they would like to play, for instance)
     When the user starts working on a poem, the poem is moved from saved to in-progress.
     """
-    saved = ListField(ReferenceField(Poem))
+    in_progress = ListField(ReferenceField(Poem))
     """
     A list of the poems the user is currently "working on"
     Important to note is that all poems in-progress have an associated Progress document,
@@ -83,17 +82,16 @@ class User(Document):
     and still have a progress document.
     A poem becomes in-progress by initially submitting a line of the poem.
     """
-    in_progress = ListField(ReferenceField(Poem))
+    completed = ListField(ReferenceField(Poem))
     """
     A list of poems the user has completed
     A poem becomes completed once all lines are correct. Once completed, a poem is no longer
     considered in-progress, but can become in-progress again by resetting the progress.
     """
-    completed = ListField(ReferenceField(Poem))
+    locations = MapField(StringField())
     """
     A map of poems to locations which were most recently used to access the poem
     """
-    locations = MapField(StringField())
 
 class ProgressLine(EmbeddedDocument):
     answer = ListField(StringField())
@@ -106,14 +104,14 @@ class Progress(Document):
     lines = MapField(EmbeddedDocumentField(ProgressLine))
     num_correct = IntField()
 
-"""
-Used to track invalidated tokens
-When a user logs out, their token is marked as invalidated, meaning it cannot be
-used for future login attempts. Whenever we mark the token as invalidated, we make sure
-to include an 'expireAfterSeconds' index of the expires field so that our database isn't
-polluted with old tokens.
-"""
 class TokenBlocklist(Document):
+    """
+    Used to track invalidated tokens
+    When a user logs out, their token is marked as invalidated, meaning it cannot be
+    used for future login attempts. Whenever we mark the token as invalidated, we make sure
+    to include an 'expireAfterSeconds' index of the expires field so that our database isn't
+    polluted with old tokens.
+    """
     meta = {
         'collection': 'token_blocklist',
         'indexes': [{'fields': ['expires'], 'expireAfterSeconds': 0}]
