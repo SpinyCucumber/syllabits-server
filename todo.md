@@ -3,7 +3,7 @@
 - [ ] README (more info)
 - [x] Mutation logic
 - [x] Login/Register mutations
-- [ ] Provide fix to MongoengineConnectionField
+- [x] Provide fix to MongoengineConnectionField
 - [ ] Categories
     - Literary movement, historical period, themes, topics, images, etc.
     - Choose some initial tags when registering
@@ -11,5 +11,5 @@
         - Calculated using user interests and poem tags
 - [x] Poem Locations
 - [ ] Editors can submit poems, which then have to be approved
-- Should probably make admin first
-- [ ] Searchable connection (e.g. for poems)
+-   Should probably make admin functionality first
+- [x] Searchable connection (e.g. for poems)
