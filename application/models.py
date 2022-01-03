@@ -67,16 +67,20 @@ class Poem(Document):
             }
         ]
     }
-    categories = ListField(ReferenceField(Category))
+    categories = ListField(StringField())
+    """
+    Each poem can belongs to zero or many categories.
+    This list contains the name of each category.
+    """
     title = StringField()
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
 
     # For testing
-    # Assumes poem doesn't already belong to category
     def add_category(self, name):
-        category = Category.objects(name=name).upsert_one(inc__ref_count=1)
-        self.modify(push__categories=category)
+        if (name not in self.categories):
+            Category.objects(name=name).upsert_one(inc__ref_count=1)
+            self.modify(push__categories=name)
     
     def __init__(self, **values):
         # We automatically create an initial ordering based on order of line list

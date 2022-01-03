@@ -63,11 +63,13 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         connection_class = CountableConnection
+        filter_fields = {
+            'categories': ['all', 'in']
+        }
         searchable = True
 
     progress = Field(Progress)
     lines = List(PoemLine)
-    categories = List(Category)
     location = String()
     num_lines = Int() # Expose number of lines for convenience
 
@@ -98,8 +100,7 @@ class Collection(MongoengineObjectType):
 class Query(ObjectType):
     node = Node.Field()
     collections = MongoengineConnectionField(Collection)
-    # "categories__all" is difficult to implement with filters, so we manually specify type
-    poems = MongoengineConnectionField(Poem, categories__all=List(String))
+    poems = MongoengineConnectionField(Poem)
     categories = MongoengineConnectionField(Category)
 
 """
