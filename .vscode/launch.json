@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Test Server",
+            "name": "Syllabits Server",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -40,7 +40,7 @@
             "justMyCode": false
         },
         {
-            "name": "Schema Testing",
+            "name": "Test Server",
             "type": "python",
             "request": "launch",
             "module": "flask",
