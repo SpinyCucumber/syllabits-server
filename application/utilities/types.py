@@ -1,4 +1,4 @@
-from graphene import Field, Connection, Int, List, JSONString, Boolean
+from graphene import Field, Connection, Int, JSONString, Boolean
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 
@@ -22,6 +22,10 @@ class MongoengineCreateMutationOptions(MutationOptions):
     type = None
 
 class MongoengineCreateMutation(Mutation):
+    """
+    A simple mutation class that supports creating a new instance of a Mongoengine document
+    The user provides data in an unrestricted JSON format, and the data is validated by Mongoengine.
+    """
     class Meta:
         abstract = True
 
@@ -42,6 +46,7 @@ class MongoengineCreateMutation(Mutation):
     @classmethod
     def mutate(cls, parent, info, data):
         # Create a new document instance with the supplied data
+        # Mongoengine does the heavy lifting here and validates the input
         model = cls._meta.type._meta.model
         obj = model._from_son(data, created=True)
         obj.save()
