@@ -38,8 +38,11 @@ class MongoengineCreateMutation(Mutation):
         arguments = {'data': JSONString()}
         super().__init_subclass_with_meta__(arguments=arguments, _meta=_meta, **options)
         _meta.fields['ok'] = Field(Boolean)
-    
+
     @classmethod
     def mutate(cls, parent, info, data):
-        # TODO
-        pass
+        # Create a new document instance with the supplied data
+        model = cls._meta.type._meta.model
+        obj = model._from_son(data, created=True)
+        obj.save()
+        return cls(ok=True)
