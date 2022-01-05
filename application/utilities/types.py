@@ -1,4 +1,5 @@
-from graphene import Connection, Int, Mutation, List, JSONString
+from graphene import Field, Connection, Int, List, JSONString, Boolean
+from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 
 class CountableConnection(Connection):
@@ -14,18 +15,29 @@ class CountableConnection(Connection):
     def resolve_total_count(root, info):
         return root.iterable.count()
 
+class MongoengineCreateMutationOptions(MutationOptions):
+    """
+    Gods this is a long class name
+    """
+    type = None
+
 class MongoengineCreateMutation(Mutation):
     class Meta:
         abstract = True
-    
+
     @classmethod
     def __init_subclass_with_meta__(cls, type=None, _meta=None, **options):
         assert type, 'Type is required'
         assert issubclass(type, MongoengineObjectType), 'Type must inherit from MongoengineObjectType'
+
+        if not _meta:
+            _meta = MongoengineCreateMutationOptions(cls)
         _meta.type = type
-        # Construct mutation arguments
+
+        # Construct mutation arguments and resulting fields
         arguments = {'changes': List(JSONString)}
-        return super().__init_subclass_with_meta__(arguments=arguments, _meta=_meta, **options)
+        super().__init_subclass_with_meta__(arguments=arguments, _meta=_meta, **options)
+        _meta.fields['ok'] = Field(Boolean)
     
     @classmethod
     def mutate(cls, parent, info, changes):
