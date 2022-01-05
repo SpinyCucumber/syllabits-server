@@ -1,4 +1,4 @@
-from graphene import Field, Connection, Int, JSONString, Boolean, GlobalID, List
+from graphene import Field, Connection, Int, JSONString, Boolean, List, ID
 from graphene.relay import Node
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
@@ -62,7 +62,7 @@ class MongoengineUpdateMutation(MongoengineMutation):
     @classmethod
     def __init_subclass_with_meta__(cls, **options):
         # Construct arguments and resulting fields
-        arguments = {'id': GlobalID(), 'changes': List(JSONString)}
+        arguments = {'id': ID(), 'changes': List(JSONString)}
         super().__init_subclass_with_meta__(arguments=arguments, **options)
         cls._meta.fields['ok'] = Field(Boolean)
     
