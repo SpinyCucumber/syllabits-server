@@ -67,14 +67,14 @@ class Poem(Document):
             }
         ]
     }
-    categories = ListField(StringField(), required=True)
+    categories = ListField(StringField())
     """
     Each poem can belongs to zero or many categories.
     This list contains the name of each category.
     """
     title = StringField(required=True)
     author = StringField()
-    lines = EmbeddedDocumentListField(PoemLine, required=True)
+    lines = EmbeddedDocumentListField(PoemLine)
 
     # For testing
     def add_category(self, name):
