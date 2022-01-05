@@ -18,4 +18,4 @@ class Mutation(UserMutation, ObjectType):
 Schema
 """
 
-schema = Schema(query=UserQuery, mutation=UserMutation)
+schema = Schema(query=UserQuery, mutation=Mutation)
