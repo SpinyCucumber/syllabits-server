@@ -25,7 +25,7 @@ class Category(Document):
     """
     meta = {'collection': 'category'}
     name = StringField(primary_key=True)
-    ref_count = IntField()
+    ref_count = IntField(required=True)
 
 class Collection(Document):
     meta = {'collection': 'collection'}
@@ -34,7 +34,7 @@ class Collection(Document):
     """
     Collections can have categories just like poems.
     """
-    poems = ListField(ReferenceField('Poem'))
+    poems = ListField(ReferenceField('Poem'), required=True)
     primary = BooleanField(default=False)
 
 class PoemLine(EmbeddedDocument):
@@ -43,13 +43,13 @@ class PoemLine(EmbeddedDocument):
     Each poem line has a unique ID. This gives lines a persistent "name" so we can avoid referencing them by
     index, which is volatile as lines can be created and destroyed.
     """
-    order = IntField()
+    order = IntField(required=True)
     """
     We impose a "virtual ordering" on the poem lines to allow them to be rearranged easily.
     The virtual ordering happens all client-side.
     """
-    text = StringField()
-    key = ListField(StringField(max_length=1))
+    text = StringField(required=True)
+    key = ListField(StringField(max_length=1), required=True)
     """
     The line key is an array of characters where each character corresponds to a type of foot.
     """
@@ -67,14 +67,14 @@ class Poem(Document):
             }
         ]
     }
-    categories = ListField(StringField())
+    categories = ListField(StringField(), required=True)
     """
     Each poem can belongs to zero or many categories.
     This list contains the name of each category.
     """
-    title = StringField()
+    title = StringField(required=True)
     author = StringField()
-    lines = EmbeddedDocumentListField(PoemLine)
+    lines = EmbeddedDocumentListField(PoemLine, required=True)
 
     # For testing
     def add_category(self, name):
@@ -94,8 +94,8 @@ class Poem(Document):
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
     email = EmailField(unique=True)
-    is_admin = BooleanField()
-    password_hashed = StringField()
+    is_admin = BooleanField(default=False)
+    password_hashed = StringField(required=True)
     saved = ListField(ReferenceField(Poem))
     """
     A user can 'save' poems. This is a simple, general-purpose feature which allows
@@ -122,14 +122,14 @@ class User(Document):
     """
 
 class ProgressLine(EmbeddedDocument):
-    answer = ListField(StringField())
-    correct = BooleanField()
+    answer = ListField(StringField(max_length=1), required=True)
+    correct = BooleanField(required=True)
 
 class Progress(Document):
     meta = {'collection': 'progress', 'indexes': [('user', 'poem')]}
-    user = ReferenceField(User)
-    poem = ReferenceField(Poem)
-    lines = MapField(EmbeddedDocumentField(ProgressLine))
+    user = ReferenceField(User, required=True)
+    poem = ReferenceField(Poem, required=True, unique_with='user')
+    lines = MapField(EmbeddedDocumentField(ProgressLine), required=True)
     num_correct = IntField()
 
 class TokenBlocklist(Document):
@@ -145,4 +145,4 @@ class TokenBlocklist(Document):
         'indexes': [{'fields': ['expires'], 'expireAfterSeconds': 0}]
     }
     jti = StringField(primary_key=True)
-    expires = DateTimeField()
+    expires = DateTimeField(required=True)
