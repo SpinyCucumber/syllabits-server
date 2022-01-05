@@ -69,7 +69,7 @@ class MongoengineUpdateMutation(MongoengineMutation):
     @classmethod
     def mutate(cls, parent, info, id, changes):
         # Retrieve document using global ID and apply changes
-        document = cls._meta.type.get_node_from_global_id(info, id)
+        document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
         for change in changes:
             document.modify(**change)
         return cls(ok=True)
