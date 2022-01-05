@@ -1,4 +1,5 @@
-from graphene import Field, Connection, Int, JSONString, Boolean
+from graphene import Field, Connection, Int, JSONString, Boolean, GlobalID, List
+from graphene.relay import Node
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 
@@ -15,17 +16,13 @@ class CountableConnection(Connection):
     def resolve_total_count(root, info):
         return root.iterable.count()
 
-class MongoengineCreateMutationOptions(MutationOptions):
+class MongoengineMutationOptions(MutationOptions):
     """
     Gods this is a long class name
     """
     type = None
 
-class MongoengineCreateMutation(Mutation):
-    """
-    A simple mutation class that supports creating a new instance of a Mongoengine document
-    The user provides data in an unrestricted JSON format, and the data is validated by Mongoengine.
-    """
+class MongoengineMutation(Mutation):
     class Meta:
         abstract = True
 
@@ -33,15 +30,21 @@ class MongoengineCreateMutation(Mutation):
     def __init_subclass_with_meta__(cls, type=None, _meta=None, **options):
         assert type, 'Type is required'
         assert issubclass(type, MongoengineObjectType), 'Type must inherit from MongoengineObjectType'
-
         if not _meta:
-            _meta = MongoengineCreateMutationOptions(cls)
+            _meta = MongoengineMutationOptions(cls)
         _meta.type = type
+        super().__init_subclass_with_meta__(_meta=_meta, **options)
 
-        # Construct mutation arguments and resulting fields
+class MongoengineCreateMutation(MongoengineMutation):
+    class Meta:
+        abstract = True
+    
+    @classmethod
+    def __init_subclass_with_meta__(cls, **options):
+        # Construct arguments and resulting fields
         arguments = {'data': JSONString()}
-        super().__init_subclass_with_meta__(arguments=arguments, _meta=_meta, **options)
-        _meta.fields['ok'] = Field(Boolean)
+        super().__init_subclass_with_meta__(arguments=arguments, **options)
+        cls._meta.fields['ok'] = Field(Boolean)
 
     @classmethod
     def mutate(cls, parent, info, data):
@@ -50,4 +53,23 @@ class MongoengineCreateMutation(Mutation):
         model = cls._meta.type._meta.model
         obj = model._from_son(data, created=True)
         obj.save()
+        return cls(ok=True)
+
+class MongoengineUpdateMutation(MongoengineMutation):
+    class Meta:
+        abstract = True
+    
+    @classmethod
+    def __init_subclass_with_meta__(cls, **options):
+        # Construct arguments and resulting fields
+        arguments = {'id': GlobalID(), 'changes': List(JSONString)}
+        super().__init_subclass_with_meta__(arguments=arguments, **options)
+        cls._meta.fields['ok'] = Field(Boolean)
+    
+    @classmethod
+    def mutate(cls, parent, info, id, changes):
+        # Retrieve document using global ID and apply changes
+        document = cls._meta.type.get_node_from_global_id(info, id)
+        for change in changes:
+            document.modify(**change)
         return cls(ok=True)
