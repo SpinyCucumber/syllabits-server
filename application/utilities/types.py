@@ -35,11 +35,11 @@ class MongoengineCreateMutation(Mutation):
         _meta.type = type
 
         # Construct mutation arguments and resulting fields
-        arguments = {'changes': List(JSONString)}
+        arguments = {'data': JSONString()}
         super().__init_subclass_with_meta__(arguments=arguments, _meta=_meta, **options)
         _meta.fields['ok'] = Field(Boolean)
     
     @classmethod
-    def mutate(cls, parent, info, changes):
+    def mutate(cls, parent, info, data):
         # TODO
         pass
