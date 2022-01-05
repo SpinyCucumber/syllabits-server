@@ -18,8 +18,8 @@ class CreateMutation(Mutation):
         abstract = True
     
     @classmethod
-    def __init_subclass_with_meta__(cls, model=None, **options):
+    def __init_subclass_with_meta__(cls, model=None, _meta=None, **options):
         assert model, 'Model is required'
         arguments = {'changes': List(JSONString)}
         # TODO
-        return super().__init_subclass_with_meta__(arguments=arguments, **options)
+        return super().__init_subclass_with_meta__(arguments=arguments, _meta=_meta, **options)
