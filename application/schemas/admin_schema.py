@@ -1,15 +1,15 @@
 from graphene import (Schema, ObjectType)
 from .user_schema import Query as UserQuery, Mutation as UserMutation
 from .public_schema import Poem
-from ..utilities import CreateMutation
+from ..utilities import MongoengineCreateMutation
 
 """
 Mutations
 """
 
-class CreatePoem(CreateMutation):
+class CreatePoem(MongoengineCreateMutation):
     class Meta:
-        type = int
+        type = Poem
 
 class Mutation(UserMutation, ObjectType):
     create_poem = CreatePoem.Field()

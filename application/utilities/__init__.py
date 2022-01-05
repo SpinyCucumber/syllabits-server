@@ -1,6 +1,6 @@
 import json
 import base64
-from .types import CountableConnection, CreateMutation
+from .types import CountableConnection, MongoengineCreateMutation
 
 def find_conflicts(key, answer):
     """
@@ -24,7 +24,7 @@ def encode_location(location):
 
 __all__ = [
     'CountableConnection',
-    'CreateMutation',
+    'MongoengineCreateMutation',
     'find_conflicts',
     'decode_location',
     'encode_location',

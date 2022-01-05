@@ -14,7 +14,7 @@ class CountableConnection(Connection):
     def resolve_total_count(root, info):
         return root.iterable.count()
 
-class CreateMutation(Mutation):
+class MongoengineCreateMutation(Mutation):
     class Meta:
         abstract = True
     
