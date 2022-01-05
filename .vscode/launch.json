@@ -5,25 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Syllabits Server (Shell)",
-            "type": "python",
-            "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "wsgi.py",
-                "FLASK_ENV": "development",
-                "FLASK_RUN_PORT": "4000",
-                "SYLLABITS_MODE": "development",
-                "SYLLABITS_SECRET_KEY": "thisisadummykeyfordevelopment"
-            },
-            "args": [
-                "shell"
-            ],
-            "jinja": true,
-            "justMyCode": false
-        },
-        {
-            "name": "Syllabits Server (Debug)",
+            "name": "Syllabits Server",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -38,8 +20,39 @@
                 "run",
                 "--no-debugger"
             ],
-            "jinja": true,
             "justMyCode": false
-        }
+        },
+        {
+            "name": "Syllabits Server (Shell)",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "wsgi.py",
+                "FLASK_ENV": "development",
+                "FLASK_RUN_PORT": "4000",
+                "SYLLABITS_MODE": "development",
+                "SYLLABITS_SECRET_KEY": "thisisadummykeyfordevelopment"
+            },
+            "args": [
+                "shell"
+            ],
+            "justMyCode": false
+        },
+        {
+            "name": "Schema Testing",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "schema_testing.wsgi",
+                "FLASK_ENV": "development",
+            },
+            "args": [
+                "run",
+                "--no-debugger"
+            ],
+            "justMyCode": false
+        },
     ]
 }
