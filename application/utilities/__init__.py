@@ -1,6 +1,7 @@
 import json
 import base64
 from .types import CountableConnection, MongoengineCreateMutation, MongoengineUpdateMutation
+from .document_path import DocumentPath
 
 def find_conflicts(key, answer):
     """
@@ -23,6 +24,7 @@ def encode_location(location):
     return base64.b64encode(json.dumps(location))
 
 __all__ = [
+    'DocumentPath',
     'CountableConnection',
     'MongoengineCreateMutation',
     'MongoengineUpdateMutation',
