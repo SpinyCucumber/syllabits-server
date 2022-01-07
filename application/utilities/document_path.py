@@ -6,10 +6,8 @@ class StringLiteral(str):
 class IntLiteral(int):
     grammar = re.compile("[-+]?\d+")
 
-Literal = [IntLiteral, StringLiteral]
-
 class Condition:
-    grammar = attr('key', Symbol), '=', attr('value', Literal)
+    grammar = attr('key', Symbol), '=', attr('value', StringLiteral)
 
 class FilterSelector(List):
     grammar = Condition, maybe_some(',', Condition)
