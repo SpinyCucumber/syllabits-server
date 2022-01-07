@@ -1,12 +1,12 @@
 from pypeg2 import *
 
 class StringLiteral(str):
-    grammar = contiguous('"', re.compile(r'[^"]*'), '"')
+    grammar = word
 
 class IntLiteral(int):
     grammar = re.compile("[-+]?\d+")
 
-Literal = [StringLiteral, IntLiteral]
+Literal = [IntLiteral, StringLiteral]
 
 class Condition:
     grammar = attr('key', Symbol), '=', attr('value', Literal)
