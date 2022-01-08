@@ -2,6 +2,7 @@ from graphene import Field, Connection, Int, JSONString, Boolean, List, ID
 from graphene.relay import Node
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
+from ..utilities import transform_document
 
 class CountableConnection(Connection):
     """
@@ -70,6 +71,5 @@ class MongoengineUpdateMutation(MongoengineMutation):
     def mutate(cls, parent, info, id, changes):
         # Retrieve document using global ID and apply changes
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
-        for change in changes:
-            document.modify(**change)
+        transform_document(document, *changes)
         return cls(ok=True)
