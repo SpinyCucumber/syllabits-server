@@ -57,7 +57,14 @@ def remove(receiver: list, value=None):
     """
     receiver.remove(value)
 
-def transform_document(document, changes):
+def transform_document(document, *changes):
+    """
+    Accepts a list of changes and applies them to a Mongoengine document
+    A 'change' is a dict that (at minimum) specifies the 'op' attribute, which denotes the type of operation.
+    A change can additionally specify the 'path' attribute, which is a DocumentPath that is evaluated to change
+    the operation receiver.
+    The rest of the attributes are arguments to the operation.
+    """
     path_cache = {}
     for change in changes:
         copy = change.copy()
