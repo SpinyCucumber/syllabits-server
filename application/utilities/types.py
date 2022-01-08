@@ -72,4 +72,5 @@ class MongoengineUpdateMutation(MongoengineMutation):
         # Retrieve document using global ID and apply changes
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
         transform_document(document, *changes)
+        document.save()
         return cls(ok=True)
