@@ -1,11 +1,11 @@
 import os
 
 VAR_MODE = 'SYLLABITS_MODE'
-modeToConfig = {}
+mode_to_config = {}
 
 def for_mode(name):
     def wrapper(config):
-        modeToConfig[name] = config
+        mode_to_config[name] = config
         return config
     return wrapper
 
@@ -16,4 +16,4 @@ def load_config(config):
     if not mode:
         print(f'{VAR_MODE} not set! Defaulting to \'development\'')
         mode = 'development'
-    config.from_object(modeToConfig[mode])
+    config.from_object(mode_to_config[mode])
