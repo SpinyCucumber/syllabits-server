@@ -23,8 +23,39 @@ def operator(name, supported_types=None, required_args=None):
     return wrapper
 
 @operator('set', supported_types=(BaseDocument, ), required_args=('field', 'value'))
-def set(receiver, field=None, value=None):
+def set(receiver: BaseDocument, field=None, value=None):
+    """
+    Sets a field of a document to a value
+    """
     receiver[field] = value
+
+@operator('create', supported_types=(EmbeddedDocumentList, ), required_args=('data', ))
+def create(receiver: EmbeddedDocumentList, data=None):
+    """
+    Inserts a new document into an embedded document list
+    """
+    receiver.create(**data)
+
+@operator('delete', supported_types=(EmbeddedDocumentList, ), required_args=('where', ))
+def delete(receiver: EmbeddedDocumentList, where=None):
+    """
+    Deletes documents that meet certain conditions from an embedded document list
+    """
+    receiver.filter(**where).delete()
+
+@operator('add', supported_types=(list, ), required_args=('value', ))
+def add(receiver: list, value=None):
+    """
+    Adds a value to a list
+    """
+    receiver.append(value)
+
+@operator('remove', supported_types=(list, ), required_args=('value', ))
+def remove(receiver: list, value=None):
+    """
+    Removes a value from a list
+    """
+    receiver.remove(value)
 
 def transform_document(document, changes):
     path_cache = {}
