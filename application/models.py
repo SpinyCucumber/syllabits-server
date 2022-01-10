@@ -49,6 +49,7 @@ class PoemLine(EmbeddedDocument):
     The virtual ordering happens all client-side.
     """
     text = StringField(required=True)
+    # TODO Allow null
     key = ListField(StringField(max_length=1), required=True)
     """
     The line key is an array of characters where each character corresponds to a type of foot.
