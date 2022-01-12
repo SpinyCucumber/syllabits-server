@@ -49,10 +49,17 @@ class PoemLine(EmbeddedDocument):
     The virtual ordering happens all client-side.
     """
     text = StringField(required=True)
-    # TODO Allow null
-    key = ListField(StringField(max_length=1), required=True)
+    key = ListField(StringField())
     """
-    The line key is an array of characters where each character corresponds to a type of foot.
+    The line key is an array of strings where each string corresponds to a type of foot.
+    It would be pretty cool to use an enum for additional validation, but Mongoengine sucks
+    and for whatever reason using EnumField with a ListField breaks the list.
+    It would also be cool to use 'None' to for empty slots, but Mongoengine hates this as well,
+    so we use the empty String.
+    See https://github.com/MongoEngine/mongoengine/issues/1443
+    Part of the philosophy is that 'None' should represent the absence of the field in MongoDB, which
+    maps well to individual fields, but breaks in the context of lists. The idea of 'None' in a list
+    is helpful, and it's a shame Mongoengine doesn't support it.
     """
     stanza_break = BooleanField(default=False)
 
