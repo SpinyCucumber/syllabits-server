@@ -78,7 +78,7 @@ class MongoengineUpdateMutation(MongoengineMutation):
     @classmethod
     def mutate(cls, parent, info, id, transforms):
 
-        receiver_lookup = {}
+        path_lookup = {}
         def parse_transform(transform: dict):
             # Parse operation using operation registry
             op_name = transform.pop('op', None)
@@ -89,16 +89,13 @@ class MongoengineUpdateMutation(MongoengineMutation):
                 raise TypeError(f'Unknown operation \'{op_name}\'')
             # Parse path
             # If path is specified, we try to lookup using cache first
-            # If cache lookup fails, we parse raw path and evaluate on document
-            # to find receiver
-            path = transform.pop('path', None)
-            if path:
-                receiver = receiver_lookup.get(path, None)
-                if not receiver:
-                    compiled_path = DocumentPath(path)
-                    # TODO Convert each path field to snake case
-                    receiver = compiled_path.evaluate(document)
-                    receiver_lookup[path] = receiver
+            # If cache lookup fails, we parse raw path to create compiled path
+            raw_path = transform.pop('path', '')
+            path = path_lookup.get(raw_path, None)
+            if not path:
+                path = DocumentPath(raw_path)
+                # TODO Convert each path field to snake case
+                path_lookup[raw_path] = path
             # The remaining attributes are operation arguments
             return DocumentTransform(operator, path, transform)
 
