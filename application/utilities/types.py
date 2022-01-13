@@ -4,6 +4,7 @@ from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 from .document_path import DocumentPath
 from .document_transform import operators, DocumentTransform
+from .stringcase import snakecase
 
 class CountableConnection(Connection):
     """
@@ -94,7 +95,9 @@ class MongoengineUpdateMutation(MongoengineMutation):
             path = path_lookup.get(raw_path, None)
             if not path:
                 path = DocumentPath(raw_path)
-                # TODO Convert each path field to snake case
+                # Convert each path field to snake case
+                for level in path.levels:
+                    level.field.name = snakecase(level.field.name)
                 path_lookup[raw_path] = path
             # The remaining attributes are operation arguments
             return DocumentTransform(operator, path, transform)

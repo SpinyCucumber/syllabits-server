@@ -43,11 +43,11 @@ class DocumentPath:
     """
 
     def __init__(self, string):
-        self.path = parse(string, Path)    
+        self.levels = parse(string, Path)    
 
     def evaluate(self, document):
         result = document
-        for level in self.path:
+        for level in self.levels:
             # Look up field
             result = result[level.field.name]
             # If selector is specified, apply selector
