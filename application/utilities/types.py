@@ -2,7 +2,7 @@ from graphene import Field, Connection, Int, JSONString, Boolean, List, ID
 from graphene.relay import Node
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
-from .document_transformer import transform_document
+from .document_transform import transform_document
 
 class CountableConnection(Connection):
     """

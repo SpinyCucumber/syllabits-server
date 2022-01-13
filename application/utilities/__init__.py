@@ -2,7 +2,7 @@ import json
 import base64
 from .types import CountableConnection, MongoengineCreateMutation, MongoengineUpdateMutation
 from .document_path import DocumentPath
-from .document_transformer import transform_document
+from .document_transform import transform_document
 
 def find_conflicts(key, answer):
     """
