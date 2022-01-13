@@ -2,7 +2,8 @@ from graphene import Field, Connection, Int, JSONString, Boolean, List, ID
 from graphene.relay import Node
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
-from .document_transform import transform_document
+from .document_path import DocumentPath
+from .document_transform import operators, DocumentTransform
 
 class CountableConnection(Connection):
     """
@@ -57,20 +58,54 @@ class MongoengineCreateMutation(MongoengineMutation):
         return cls(ok=True)
 
 class MongoengineUpdateMutation(MongoengineMutation):
+    """
+    Accepts a list of transforms and applies them to a Mongoengine document
+    A 'transform' is a dict that (at minimum) specifies the 'op' attribute, which denotes the type of operation.
+    A transform can additionally specify the 'path' attribute, which is a DocumentPath that is evaluated to change
+    the operation receiver.
+    The rest of the attributes are arguments to the operation.
+    """
     class Meta:
         abstract = True
     
     @classmethod
     def __init_subclass_with_meta__(cls, **options):
         # Construct arguments and resulting fields
-        arguments = {'id': ID(), 'changes': List(JSONString)}
+        arguments = {'id': ID(), 'transforms': List(JSONString)}
         super().__init_subclass_with_meta__(arguments=arguments, **options)
         cls._meta.fields['ok'] = Field(Boolean)
     
     @classmethod
-    def mutate(cls, parent, info, id, changes):
-        # Retrieve document using global ID and apply changes
+    def mutate(cls, parent, info, id, transforms):
+
+        receiver_lookup = {}
+        def parse_transform(transform: dict):
+            # Parse operation using operation registry
+            op_name = transform.pop('op', None)
+            if not op_name:
+                raise TypeError('All transforms must provide the \'op\' attribute')
+            operator = operators.get(op_name)
+            if not operator:
+                raise TypeError(f'Unknown operation \'{op_name}\'')
+            # Parse path
+            # If path is specified, we try to lookup using cache first
+            # If cache lookup fails, we parse raw path and evaluate on document
+            # to find receiver
+            path = transform.pop('path', None)
+            if path:
+                receiver = receiver_lookup.get(path, None)
+                if not receiver:
+                    compiled_path = DocumentPath(path)
+                    # TODO Convert each path field to snake case
+                    receiver = compiled_path.evaluate(document)
+                    receiver_lookup[path] = receiver
+            # The remaining attributes are operation arguments
+            return DocumentTransform(operator, path, transform)
+
+        # Retrieve document using global ID
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
-        transform_document(document, *changes)
+        # Parse each transform and apply to document, then save document
+        for transform in map(parse_transform, transforms):
+            transform.apply(document)
         document.save()
         return cls(ok=True)
