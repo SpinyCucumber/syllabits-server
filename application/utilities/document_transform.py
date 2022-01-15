@@ -62,7 +62,7 @@ def add(receiver: list, value=None):
     """
     receiver.append(value)
 
-@operators.register('remove', supported_types=(list, ), args={'value': None})
+@operators.register('remove', supports=(list, ), args={'value': None})
 def remove(receiver: list, value=None):
     """
     Removes a value from a list
