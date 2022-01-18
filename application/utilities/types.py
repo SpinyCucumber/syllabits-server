@@ -2,9 +2,14 @@ from graphene import Field, Connection, Int, JSONString, Boolean, List, ID
 from graphene.relay import Node
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
+import re
 from .document_path import DocumentPath
-from .document_transform import operators, DocumentTransform
-from .stringcase import snakecase
+from .document_transform import DocumentTransform
+from . import operators
+
+break_pattern = re.compile(r'(?<!^)(?=[A-Z])')
+def snakecase(string):
+    return break_pattern.sub('_', string).lower()
 
 class CountableConnection(Connection):
     """
@@ -97,8 +102,9 @@ class MongoengineUpdateMutation(MongoengineMutation):
                 path = DocumentPath(raw_path)
                 # Convert each path field to snake case
                 for level in path.levels:
-                    level.field.name = snakecase(level.field.name)
+                    level.field = snakecase(level.field)
                 path_lookup[raw_path] = path
+            # TODO Fix arguments
             # The remaining attributes are operation arguments
             return DocumentTransform(operator, path, transform)
 
