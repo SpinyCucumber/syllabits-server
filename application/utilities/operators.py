@@ -2,7 +2,7 @@ from mongoengine.base import BaseDocument, EmbeddedDocumentList
 
 _lookup = {}
     
-def register(self, name, supports=None, required_args=None):
+def register(name, supports=None, required_args=None):
     """
     Registers new functions as operators by decorating them
     Operators have a name, a set of supported types, and a list of required keyword args.
@@ -17,15 +17,15 @@ def register(self, name, supports=None, required_args=None):
                 if arg not in kwargs:
                     raise TypeError(f'Missing required arg \'{arg}\'')
             return func(receiver, **kwargs)
-        self.lookup[name] = wrapped
+        _lookup[name] = wrapped
         return wrapped
     return wrapper
 
-def get(self, name):
+def get(name):
     """
-    Returns registry entry corresponding to 'name', or None
+    Returns operator corresponding to 'name', or None
     """
-    return self.lookup.get(name, None)
+    return _lookup.get(name, None)
 
 @register('set', supports=(BaseDocument,), required_args=('field', 'value'))
 def set(receiver: BaseDocument, field=None, value=None):
