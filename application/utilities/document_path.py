@@ -7,13 +7,13 @@ class IntLiteral(int):
     grammar = re.compile("[-+]?\d+")
 
 class Condition:
-    grammar = attr('key', Symbol), '=', attr('value', StringLiteral)
+    grammar = attr('key', word), '=', attr('value', StringLiteral)
 
 class FilterSelector(List):
     grammar = Condition, maybe_some(',', Condition)
 
     def apply(self, receiver):
-        kwargs = {cond.key.name: cond.value for cond in self}
+        kwargs = {cond.key: cond.value for cond in self}
         return receiver.get(**kwargs)
 
 class IndexSelector:
@@ -25,7 +25,7 @@ class IndexSelector:
 Selector = [FilterSelector, IndexSelector]
 
 class Level:
-    grammar = attr('field', Symbol), attr('selector', optional('[', Selector, ']'))
+    grammar = attr('field', word), attr('selector', optional('[', Selector, ']'))
 
 class Path(List):
     grammar = Level, maybe_some('.', Level)
