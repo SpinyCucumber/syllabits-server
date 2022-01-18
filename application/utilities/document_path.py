@@ -49,7 +49,7 @@ class DocumentPath:
         result = document
         for level in self.levels:
             # Look up field
-            result = result[level.field.name]
+            result = result[level.field]
             # If selector is specified, apply selector
             if (level.selector):
                 result = level.selector.apply(result)
