@@ -28,7 +28,7 @@ class Level:
     grammar = attr('field', word), attr('selector', optional('[', Selector, ']'))
 
 class Path(List):
-    grammar = Level, maybe_some('.', Level)
+    grammar = optional(Level, maybe_some('.', Level))
 
 class DocumentPath:
     """
