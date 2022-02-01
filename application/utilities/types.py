@@ -7,9 +7,22 @@ from .document_path import DocumentPath
 from .document_transform import DocumentTransform
 from . import operators
 
-break_pattern = re.compile(r'(?<!^)(?=[A-Z])')
-def snakecase(string):
-    return break_pattern.sub('_', string).lower()
+PATTERN = re.compile(r'(?<!^)(?=[A-Z])')
+def fix_field_name(name):
+    return PATTERN.sub('_', name).lower()
+
+def fix_fields(value):
+    if isinstance(value, dict):
+        return {fix_field_name(k): fix_fields(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [fix_fields(e) for e in value]
+    return value
+
+fixers = {
+    operators.create: {'data': fix_fields},
+    operators.delete: {'where': fix_fields},
+    operators.set: {'field': fix_field_name},
+}
 
 class CountableConnection(Connection):
     """
@@ -102,9 +115,12 @@ class MongoengineUpdateMutation(MongoengineMutation):
                 path = DocumentPath(raw_path)
                 # Convert each path field to snake case
                 for level in path.levels:
-                    level.field = snakecase(level.field)
+                    level.field = fix_field_name(level.field)
                 path_lookup[raw_path] = path
-            # TODO Fix arguments
+            # Apply fixers
+            args = transform
+            for param, fixer in fixers[operator].items():
+                args[param] = fixer(args[param])
             # The remaining attributes are operation arguments
             return DocumentTransform(operator, path, transform)
 
