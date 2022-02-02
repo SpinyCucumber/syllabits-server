@@ -18,7 +18,7 @@ def fix_fields(value):
         return [fix_fields(e) for e in value]
     return value
 
-fixers = {
+arg_fixers = {
     operators.create: {'data': fix_fields},
     operators.delete: {'where': fix_fields},
     operators.set: {'field': fix_field_name},
@@ -119,8 +119,10 @@ class MongoengineUpdateMutation(MongoengineMutation):
                 path_lookup[raw_path] = path
             # Apply fixers
             args = transform
-            for param, fixer in fixers[operator].items():
-                args[param] = fixer(args[param])
+            fixers = arg_fixers.get(operator, None)
+            if fixers:
+                for param, fixer in fixers.items():
+                    args[param] = fixer(args[param])
             # The remaining attributes are operation arguments
             return DocumentTransform(operator, path, transform)
 
