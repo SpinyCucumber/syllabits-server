@@ -71,6 +71,8 @@ class MongoengineCreateMutation(MongoengineMutation):
     def mutate(cls, parent, info, data):
         # Create a new document instance with the supplied data
         # Mongoengine does the heavy lifting here and validates the input
+        # Must correct data field names
+        data = fix_fields(data)
         model = cls._meta.type._meta.model
         obj = model._from_son(data, created=True)
         obj.save()
@@ -124,7 +126,7 @@ class MongoengineUpdateMutation(MongoengineMutation):
                 for param, fixer in fixers.items():
                     args[param] = fixer(args[param])
             # The remaining attributes are operation arguments
-            return DocumentTransform(operator, path, transform)
+            return DocumentTransform(operator, path, args)
 
         # Retrieve document using global ID
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
