@@ -66,6 +66,7 @@ class MongoengineCreateMutation(MongoengineMutation):
         arguments = {'data': JSONString()}
         super().__init_subclass_with_meta__(arguments=arguments, **options)
         cls._meta.fields['ok'] = Field(Boolean)
+        cls._meta.fields['id'] = Field(ID)
 
     @classmethod
     def mutate(cls, parent, info, data):
@@ -76,7 +77,7 @@ class MongoengineCreateMutation(MongoengineMutation):
         model = cls._meta.type._meta.model
         obj = model._from_son(data, created=True)
         obj.save()
-        return cls(ok=True)
+        return cls(ok=True, id=obj.id)
 
 class MongoengineUpdateMutation(MongoengineMutation):
     """
