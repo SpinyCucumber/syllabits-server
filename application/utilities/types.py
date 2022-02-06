@@ -1,5 +1,5 @@
 from graphene import Field, Connection, Int, JSONString, Boolean, List, ID
-from graphene.relay import Node
+from graphene.relay import Node, GlobalID
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 import re
@@ -63,10 +63,11 @@ class MongoengineCreateMutation(MongoengineMutation):
     @classmethod
     def __init_subclass_with_meta__(cls, **options):
         # Construct arguments and resulting fields
+        # We return the ID of the newly created document
         arguments = {'data': JSONString()}
         super().__init_subclass_with_meta__(arguments=arguments, **options)
         cls._meta.fields['ok'] = Field(Boolean)
-        cls._meta.fields['id'] = Field(ID)
+        cls._meta.fields['id'] = GlobalID(node=None, parent_type=cls._meta.type)
 
     @classmethod
     def mutate(cls, parent, info, data):
@@ -75,9 +76,9 @@ class MongoengineCreateMutation(MongoengineMutation):
         # Must correct data field names
         data = fix_fields(data)
         model = cls._meta.type._meta.model
-        obj = model._from_son(data, created=True)
-        obj.save()
-        return cls(ok=True, id=obj.id)
+        doc = model._from_son(data, created=True)
+        doc.save()
+        return cls(ok=True, id=doc.id)
 
 class MongoengineUpdateMutation(MongoengineMutation):
     """
