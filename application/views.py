@@ -5,7 +5,7 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     verify_jwt_in_request
 )
-from flask_jwt_extended.exceptions import RevokedTokenError
+from flask_jwt_extended.exceptions import RevokedTokenError, UserLookupError
 from flask_graphql import GraphQLView
 from jwt.exceptions import InvalidTokenError
 from flask import current_app as app
@@ -27,7 +27,7 @@ class Context:
         try:
             verify_jwt_in_request(optional=True, refresh=refresh, locations=locations)
             self.user = get_current_user()
-        except (RevokedTokenError, InvalidTokenError):
+        except (RevokedTokenError, InvalidTokenError, UserLookupError):
             self.user = None
     
     def create_access_token(self):
