@@ -17,7 +17,7 @@ def user_identity_lookup(user):
 @jwt.user_lookup_loader
 def user_lookup_callback(jwt_header, jwt_data):
     identity = ObjectId(jwt_data["sub"])
-    return User.objects(pk=identity).get()
+    return User.objects(pk=identity).first()
 
 @jwt.additional_claims_loader
 def additional_claims_callback(user):
