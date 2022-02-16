@@ -1,4 +1,5 @@
-from mongoengine.base import BaseDocument, EmbeddedDocumentList
+from mongoengine.base import BaseDocument, EmbeddedDocumentList, BaseList
+from mongoengine.errors import DoesNotExist
 
 _lookup = {}
     
@@ -47,6 +48,30 @@ def delete(receiver: EmbeddedDocumentList, where=None):
     Deletes documents that meet certain conditions from an embedded document list
     """
     receiver.filter(**where).delete()
+
+@register('create_ref', supports=(BaseList,), required_args=('id',))
+def create_ref(receiver: BaseList, id=None):
+    """
+    Adds a document to a reference list
+    Also updates the reference count of the referenced document.
+    """
+    # Determine referenced document type
+    document_type = receiver._instance._fields[receiver._name].field.document_type_obj
+    # Upsert document and increment ref count, then add to list
+    document = document_type.objects.filter(pk=id).upsert_one(inc__ref_count=1)
+    receiver.append(document)
+
+@register('delete_ref', supports=(BaseList,), required_args=('id',))
+def delete_ref(receiver: BaseList, id=None):
+    """
+    Removed a document from a reference list
+    Also updates the reference count of the referenced document.
+    """
+    # Determine referenced document type
+    document_type = receiver._instance._fields[receiver._name].field.document_type_obj
+    # Upsert document and decrement ref count, then remove from list
+    document = document_type.objects.filter(pk=id).upsert_one(inc__ref_count=1)
+    receiver.remove(document)
 
 @register('add', supports=(list,), required_args=('value',))
 def add(receiver: list, value=None):
