@@ -73,7 +73,7 @@ class Poem(MongoengineObjectType):
 
     progress = Field(Progress)
     lines = List(PoemLine)
-    categories = List(Category)
+    categories = List(String)
     location = String()
     num_lines = Int() # Expose number of lines for convenience
 
@@ -87,6 +87,9 @@ class Poem(MongoengineObjectType):
         if (user):
             return ProgressModel.objects(user=user, poem=parent).first()
     
+    def resolve_categories(parent, info):
+        return [category.name for category in parent.categories]
+
     # The location last used to access a poem
     # Only resolve if user is present
     def resolve_location(parent, info):
