@@ -70,7 +70,7 @@ def delete_ref(receiver: BaseList, id=None):
     # Determine referenced document type
     document_type = receiver._instance._fields[receiver._name].field.document_type_obj
     # Upsert document and decrement ref count, then remove from list
-    document = document_type.objects.filter(pk=id).upsert_one(inc__ref_count=1)
+    document = document_type.objects.filter(pk=id).upsert_one(dec__ref_count=1)
     receiver.remove(document)
 
 @register('add', supports=(list,), required_args=('value',))
