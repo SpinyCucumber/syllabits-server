@@ -63,12 +63,9 @@ class Poem(MongoengineObjectType):
         model = PoemModel
         interfaces = (Node,)
         connection_class = CountableConnection
-        """
-        TODO Allow Mongographene to work with references
         filter_fields = {
             'categories': ['all', 'in']
         }
-        """
         searchable = True
 
     progress = Field(Progress)
