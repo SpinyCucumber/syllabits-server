@@ -75,7 +75,7 @@ class Poem(Document):
             }
         ]
     }
-    categories = ListField(StringField())
+    categories = ListField(ReferenceField(Category))
     """
     Each poem can belongs to zero or many categories.
     This list contains the name of each category.
