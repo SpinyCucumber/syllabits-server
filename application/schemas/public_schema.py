@@ -73,6 +73,7 @@ class Poem(MongoengineObjectType):
 
     progress = Field(Progress)
     lines = List(PoemLine)
+    categories = List(Category)
     location = String()
     num_lines = Int() # Expose number of lines for convenience
 
