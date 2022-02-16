@@ -1,6 +1,6 @@
 import json
 import base64
-from .types import CountableConnection, MongoengineCreateMutation, MongoengineUpdateMutation
+from .types import CountableConnection, MongoengineCreateMutation, MongoengineUpdateMutation, MongoengineDeleteMutation
 from .document_path import DocumentPath
 from .document_transform import DocumentTransform
 
@@ -30,6 +30,7 @@ __all__ = [
     'CountableConnection',
     'MongoengineCreateMutation',
     'MongoengineUpdateMutation',
+    'MongoengineDeleteMutation',
     'transform_document',
     'find_conflicts',
     'decode_location',

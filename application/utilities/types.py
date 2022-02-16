@@ -137,3 +137,22 @@ class MongoengineUpdateMutation(MongoengineMutation):
             transform.apply(document)
         document.save()
         return cls(ok=True)
+
+class MongoengineDeleteMutation(MongoengineMutation):
+
+    class Meta:
+        abstract = True
+    
+    @classmethod
+    def __init_subclass_with_meta__(cls, **options):
+        # Construct arguments and resulting fields
+        arguments = {'id': ID()}
+        super().__init_subclass_with_meta__(arguments=arguments, **options)
+        cls._meta.fields['ok'] = Field(Boolean)
+    
+    @classmethod
+    def mutate(cls, parent, info, id):
+        # Retrieve document using global ID and delete
+        document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
+        document.delete()
+        return cls(ok=True)
