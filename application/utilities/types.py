@@ -129,9 +129,9 @@ class MongoengineUpdateMutation(MongoengineMutation):
             args = transform
             if operator == operators.set:
                 args['field'] = fix_field_name(args['field'])
-            elif operator == operator.create:
+            elif operator == operators.create:
                 args['data'] = fix_fields(args['data'])
-            elif operator == operator.delete:
+            elif operator == operators.delete:
                 args['where'] = fix_fields(args['where'])
             
             # Send update signal
