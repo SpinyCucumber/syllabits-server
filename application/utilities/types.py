@@ -3,6 +3,7 @@ from graphene.relay import Node, GlobalID
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 import re
+import signals
 from .document_path import DocumentPath
 from . import operators
 
@@ -67,12 +68,13 @@ class MongoengineCreateMutation(MongoengineMutation):
         # Create a new document instance with the supplied data
         # Mongoengine does the heavy lifting here and validates the input
         # Must correct data field names
-        # TODO Send signal
         data = fix_fields(data)
         model = cls._meta.type._meta.model
-        doc = model._from_son(data, created=True)  
-        doc.save()
-        return cls(ok=True, id=doc.id)
+        document = model._from_son(data, created=True)
+        # Send signal then create document
+        signals.pre_create.send(model, document=document)
+        document.save()
+        return cls(ok=True, id=document.id)
 
 class MongoengineUpdateMutation(MongoengineMutation):
     """
@@ -97,6 +99,7 @@ class MongoengineUpdateMutation(MongoengineMutation):
 
         # Retrieve document using global ID
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
+        model = cls._meta.type._meta.model
         receiver_lookup = {}
 
         for transform in transforms:
@@ -137,7 +140,8 @@ class MongoengineUpdateMutation(MongoengineMutation):
             elif operator == operator.delete:
                 args['where'] = fix_fields(args['where'])
             
-            # TODO Send signal
+            # Send update signal
+            signals.pre_update.send(model, document=document, operator=operator, receiver=receiver, args=args)
 
             # Apply transform
             operator(receiver, **args)
@@ -161,7 +165,9 @@ class MongoengineDeleteMutation(MongoengineMutation):
     @classmethod
     def mutate(cls, parent, info, id):
         # Retrieve document using global ID and delete
-        # TODO Send signal
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
+        # Send signal then delete document
+        model = cls._meta.type._meta.model
+        signals.pre_delete.send(model, document=document)
         document.delete()
         return cls(ok=True)

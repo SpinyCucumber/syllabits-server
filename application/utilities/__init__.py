@@ -1,5 +1,6 @@
 import json
 import base64
+import signals
 from .types import CountableConnection, MongoengineCreateMutation, MongoengineUpdateMutation, MongoengineDeleteMutation
 from .document_path import DocumentPath
 
@@ -30,6 +31,7 @@ __all__ = [
     'MongoengineUpdateMutation',
     'MongoengineDeleteMutation',
     'find_conflicts',
+    'signals',
     'decode_location',
     'encode_location',
 ]
