@@ -13,7 +13,8 @@ from mongoengine.fields import (
     DateTimeField,
     MapField,
 )
-from .utilities import signals
+from pymongo.database import DBRef
+from .utilities import signals, operators
 
 class Category(Document):
     """
@@ -76,7 +77,7 @@ class Poem(Document):
             }
         ]
     }
-    categories = ListField(ReferenceField(Category))
+    categories = ListField(StringField())
     """
     Each poem can belongs to zero or many categories.
     This list contains the name of each category.
@@ -90,15 +91,21 @@ class Poem(Document):
 
 @signals.pre_create.connect_via(Poem)
 def poem_pre_create(sender, document):
-    print(document)
+    for name in document.categories:
+        Category.objects(pk=name).upsert_one(inc__ref_count=1)
 
 @signals.pre_delete.connect_via(Poem)
 def poem_pre_delete(sender, document):
-    print(document)
+    for name in document.categories:
+        Category.objects(pk=name).update_one(dec__ref_count=1)
 
 @signals.pre_update.connect_via(Poem)
 def poem_pre_update(sender, document, operator, receiver, args):
-    print(document)
+    # If adding a category, increment reference count
+    if operator == operators.add and receiver == document.categories:
+        Category.objects(pk=args['value']).upsert_one(inc__ref_count=1)
+    elif operator == operators.remove and receiver == document.categories:
+        Category.objects(pk=args['value']).update_one(dec__ref_count=1)
 
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
