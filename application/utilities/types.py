@@ -129,11 +129,6 @@ class MongoengineUpdateMutation(MongoengineMutation):
             args = transform
             if operator == operators.set:
                 args['field'] = fix_field_name(args['field'])
-                field = receiver._fields[args['field']]
-                args['value'] = field.to_python(args['value'])
-            elif operator in (operators.add, operators.remove):
-                field = receiver._instance._fields[receiver._name].field
-                args['value'] = field.to_python(args['value'])
             elif operator == operator.create:
                 args['data'] = fix_fields(args['data'])
             elif operator == operator.delete:

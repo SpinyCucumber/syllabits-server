@@ -83,9 +83,6 @@ class Poem(MongoengineObjectType):
         user = info.context.user
         if (user):
             return ProgressModel.objects(user=user, poem=parent).first()
-    
-    def resolve_categories(parent, info):
-        return [category.name for category in parent.categories]
 
     # The location last used to access a poem
     # Only resolve if user is present
