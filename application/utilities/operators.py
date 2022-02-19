@@ -1,5 +1,4 @@
-from mongoengine.base import BaseDocument, EmbeddedDocumentList, BaseList
-from mongoengine.errors import DoesNotExist
+from mongoengine.base import BaseDocument, EmbeddedDocumentList
 
 _lookup = {}
     
