@@ -4,7 +4,6 @@ from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 import re
 from .document_path import DocumentPath
-from .document_transform import DocumentTransform
 from . import operators
 
 PATTERN = re.compile(r'(?<!^)(?=[A-Z])')
@@ -17,12 +16,6 @@ def fix_fields(value):
     if isinstance(value, list):
         return [fix_fields(e) for e in value]
     return value
-
-arg_fixers = {
-    operators.create: {'data': fix_fields},
-    operators.delete: {'where': fix_fields},
-    operators.set: {'field': fix_field_name},
-}
 
 class CountableConnection(Connection):
     """
@@ -74,9 +67,10 @@ class MongoengineCreateMutation(MongoengineMutation):
         # Create a new document instance with the supplied data
         # Mongoengine does the heavy lifting here and validates the input
         # Must correct data field names
+        # TODO Send signal
         data = fix_fields(data)
         model = cls._meta.type._meta.model
-        doc = model._from_son(data, created=True)
+        doc = model._from_son(data, created=True)  
         doc.save()
         return cls(ok=True, id=doc.id)
 
@@ -101,8 +95,11 @@ class MongoengineUpdateMutation(MongoengineMutation):
     @classmethod
     def mutate(cls, parent, info, id, transforms):
 
-        path_lookup = {}
-        def parse_transform(transform: dict):
+        # Retrieve document using global ID
+        document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
+        receiver_lookup = {}
+
+        for transform in transforms:
             # Parse operation using operation registry
             op_name = transform.pop('op', None)
             if not op_name:
@@ -110,31 +107,42 @@ class MongoengineUpdateMutation(MongoengineMutation):
             operator = operators.get(op_name)
             if not operator:
                 raise TypeError(f'Unknown operation \'{op_name}\'')
+
             # Parse path
-            # If path is specified, we try to lookup using cache first
-            # If cache lookup fails, we parse raw path to create compiled path
+            # If path is specified, we try to lookup receiver using cache
+            # If not, we compile path and evaluate to find receiver
             raw_path = transform.pop('path', '')
-            path = path_lookup.get(raw_path, None)
-            if not path:
+            receiver = receiver_lookup.get(raw_path, None)
+            if not receiver:
                 path = DocumentPath(raw_path)
-                # Convert each path field to snake case
+                # Must fix field names
                 for level in path.levels:
                     level.field = fix_field_name(level.field)
-                path_lookup[raw_path] = path
-            # Apply fixers
+                receiver = path.evaluate(document)
+                receiver_lookup[raw_path] = receiver
+            
+            # Remaining values are arguments
+            # 'Fix' arguments depending on operation
+            # It's not the prettiest, but it's simple, and I dread thinking of the alternatives
             args = transform
-            fixers = arg_fixers.get(operator, None)
-            if fixers:
-                for param, fixer in fixers.items():
-                    args[param] = fixer(args[param])
-            # The remaining attributes are operation arguments
-            return DocumentTransform(operator, path, args)
+            if operator == operators.set:
+                args['field'] = fix_field_name(args['field'])
+                field = receiver._fields[args['field']]
+                args['value'] = field.to_python(args['value'])
+            elif operator in (operators.add, operators.remove):
+                field = receiver._instance._fields[receiver._name].field
+                args['value'] = field.to_python(args['value'])
+            elif operator == operator.create:
+                args['data'] = fix_fields(args['data'])
+            elif operator == operator.delete:
+                args['where'] = fix_fields(args['where'])
+            
+            # TODO Send signal
 
-        # Retrieve document using global ID
-        document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
-        # Parse each transform and apply to document, then save document
-        for transform in map(parse_transform, transforms):
-            transform.apply(document)
+            # Apply transform
+            operator(receiver, **args)
+
+        # Save document to database
         document.save()
         return cls(ok=True)
 
@@ -153,6 +161,7 @@ class MongoengineDeleteMutation(MongoengineMutation):
     @classmethod
     def mutate(cls, parent, info, id):
         # Retrieve document using global ID and delete
+        # TODO Send signal
         document = Node.get_node_from_global_id(info, id, only_type=cls._meta.type)
         document.delete()
         return cls(ok=True)
