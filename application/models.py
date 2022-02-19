@@ -13,6 +13,7 @@ from mongoengine.fields import (
     DateTimeField,
     MapField,
 )
+from .utilities import signals
 
 class Category(Document):
     """
@@ -84,11 +85,20 @@ class Poem(Document):
     author = StringField()
     lines = EmbeddedDocumentListField(PoemLine)
 
-    # For testing
-    def add_category(self, name):
-        if (name not in self.categories):
-            Category.objects(name=name).upsert_one(inc__ref_count=1)
-            self.modify(push__categories=name)
+# Connect poem signals so that we can update category
+# reference counts when appropriate
+
+@signals.pre_create.connect_via(Poem)
+def poem_pre_create(sender, document):
+    print(document)
+
+@signals.pre_delete.connect_via(Poem)
+def poem_pre_delete(sender, document):
+    print(document)
+
+@signals.pre_update.connect_via(Poem)
+def poem_pre_update(sender, document, operator, receiver, args):
+    print(document)
 
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}

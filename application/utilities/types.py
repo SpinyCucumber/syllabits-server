@@ -3,9 +3,8 @@ from graphene.relay import Node, GlobalID
 from graphene.types.mutation import Mutation, MutationOptions
 from graphene_mongo import MongoengineObjectType
 import re
-import signals
 from .document_path import DocumentPath
-from . import operators
+from . import operators, signals
 
 PATTERN = re.compile(r'(?<!^)(?=[A-Z])')
 def fix_field_name(name):

@@ -1,6 +1,5 @@
 import json
 import base64
-import signals
 from .types import CountableConnection, MongoengineCreateMutation, MongoengineUpdateMutation, MongoengineDeleteMutation
 from .document_path import DocumentPath
 
