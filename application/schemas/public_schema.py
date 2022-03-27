@@ -2,6 +2,7 @@ from graphene_mongo import MongoengineObjectType
 from graphene import (Node, GlobalID, ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, Boolean)
 from graphene_mongo import MongoengineConnectionField
 import mongoengine
+from mongoengine.errors import DoesNotExist
 
 from ..models import (
     Category as CategoryModel,
@@ -123,6 +124,12 @@ class LocationType(Enum):
     DIRECT = 0
     COLLECTION = 1
 
+class PlayPoemError(Enum):
+    POEM_NOT_FOUND = 0
+    COLLECTION_NOT_FOUND = 1
+    INVALID_INDEX = 2
+    CORRUPT_LOCATION = 3
+
 class PlayPoem(Mutation):
     """
     There are several ways to locate a poem.
@@ -142,19 +149,32 @@ class PlayPoem(Mutation):
     poem = Field(Poem)
     next = String()
     previous = String()
+    ok = Boolean()
+    error = Field(PlayPoemError)
 
     def mutate(parent, info, location):
         # Resolve location
         # Locations are B64-encoded JSON. A 'type' field specifies whether the location is
         # "direct" or references a collection.
-        decoded = decode_location(location)
+        try:
+            decoded = decode_location(location)
+        except:
+            return PlayPoem(ok=False, error=PlayPoemError.CORRUPT_LOCATION)
         next = None
         previous = None
         if decoded['t'] == LocationType.DIRECT:
-            poem=Node.get_node_from_global_id(info, decoded['p'])
+            try:
+                poem=Node.get_node_from_global_id(info, decoded['p'])
+            except DoesNotExist:
+                return PlayPoem(ok=False, error=PlayPoemError.POEM_NOT_FOUND)
         elif decoded['t'] == LocationType.COLLECTION:
-            collection = Node.get_node_from_global_id(info, decoded['c'])
-            poem = collection.poems[decoded['i']]
+            try:
+                collection = Node.get_node_from_global_id(info, decoded['c'])
+            except DoesNotExist:
+                return PlayPoem(ok=False, error=PlayPoemError.COLLECTION_NOT_FOUND)
+            index = decoded['i']
+            if index < 0 or index >= len(collection.poems): return PlayPoem(ok=False, error=PlayPoemError.INVALID_INDEX)
+            poem = collection.poems[index]
             # Define next and previous locations, if applicable
             if decoded['i'] > 0:
                 previous = decoded.copy()
@@ -170,7 +190,7 @@ class PlayPoem(Mutation):
             update_clause = {'$set': {f'locations.{str(poem.id)}': location}}
             user.modify(__raw__=update_clause)
         # Package result
-        return PlayPoem(poem=poem, next=next, previous=previous)
+        return PlayPoem(ok=True, poem=poem, next=next, previous=previous)
 
 class SubmitLineInput(InputObjectType):
     poemID = GlobalID()
@@ -246,7 +266,7 @@ class RegisterInput(LoginInput):
     pass
 
 class RegisterError(Enum):
-    USER_EXISTS = 'USER_EXISTS'
+    USER_EXISTS = 0
 
 class Register(Mutation):
     class Arguments:
