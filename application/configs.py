@@ -14,9 +14,16 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     ENABLE_GRAPHIQL = True
 
+@for_mode('betatesting')
+class BetaTestingConfig(BaseConfig):
+    DEBUG = False
+    ENABLE_GRAPHIQL = False
+    JWT_COOKIE_SECURE = True
+    CORS_ORIGINS = 'https://syllabits.betatesting.as.ua.edu'
+
 @for_mode('production')
 class ProductionConfig(BaseConfig):
     DEBUG = False
     ENABLE_GRAPHIQL = False
     JWT_COOKIE_SECURE = True
-    CORS_ORIGINS = 'https://syllabits.betatesting.as.ua.edu'
+    CORS_ORIGINS = 'https://syllabits.as.ua.edu'

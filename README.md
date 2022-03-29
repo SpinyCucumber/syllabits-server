@@ -2,7 +2,7 @@
 Syllabits backend!
 
 - Designed in Python 3.6.1 to ensure compatibility with Graphene. Compatible with Python 3.6.7/8
-- The 'SYLLABITS_MODE' environment variable should be set to either 'production' or 'development.' Defaults to 'development,' which should definitely be avoided in a public-facing server.
+- The 'SYLLABITS_MODE' environment variable should be set to either 'production', 'betatesting', or 'development.' Defaults to 'development,' which should definitely be avoided in a public-facing server.
 - In addition, the 'SYLLABITS_SECRET_KEY' environment variable must be set to a secure (random) value!
 - For locked-down server environments (like CPanel), the environment variable 'SYLLABITS_PYTHON' is also provided. This can be used to specify the path of the preferred Python interpreter when running as a Passenger app. (Passenger is the application platform that CPanel uses.)
 - Main application entry point is the 'application' module. passenger_wsgi.py is the entry point when running as a Passenger app. For more information on installing a Passenger Python app, see https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-python-wsgi-application/
