@@ -3,9 +3,9 @@ import os
 VAR_MODE = 'SYLLABITS_MODE'
 mode_to_config = {}
 
-def for_mode(name):
+def for_mode(mode):
     def wrapper(config):
-        mode_to_config[name] = config
+        mode_to_config[mode] = config
         return config
     return wrapper
 
