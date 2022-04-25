@@ -15,7 +15,7 @@ class User(MongoengineObjectType):
         model = UserModel
         interfaces = (Node,)
         # Definitely don't want to expose this
-        exclude_fields = ('password_hashed',)
+        exclude_fields = ('password_hashed', 'role')
 
 class Query(PublicQuery, ObjectType):
     # Reference to the current user
