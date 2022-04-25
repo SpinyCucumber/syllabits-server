@@ -33,6 +33,9 @@ def create_app():
         # Connect to DB
         connect(db=app.config['MONGO_DB'], host=app.config['MONGO_URI'])
 
+        # Construct/register schemas
+        from . import schemas
+
         # Construct views
         from . import views
     

@@ -12,8 +12,9 @@ from mongoengine.fields import (
     IntField,
     DateTimeField,
     MapField,
+    EnumField,
 )
-from pymongo.database import DBRef
+from enum import Enum
 from .utilities import signals, operators
 
 class Category(Document):
@@ -107,16 +108,21 @@ def poem_pre_update(sender, document, operator, receiver, args):
     elif operator == operators.remove and receiver == document.categories:
         Category.objects(pk=args['value']).update_one(dec__ref_count=1)
 
+class Role(Enum):
+    EDITOR = 'e'
+    ADMIN = 'a'
+
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
     email = EmailField(unique=True)
-    is_admin = BooleanField(default=False)
     password_hashed = StringField(required=True)
+    role = EnumField(Role, required=False)
     saved = ListField(ReferenceField(Poem))
     """
     A user can 'save' poems. This is a simple, general-purpose feature which allows
     users to remember poems (that they would like to play, for instance)
     When the user starts working on a poem, the poem is moved from saved to in-progress.
+    Currently not implemented.
     """
     in_progress = ListField(ReferenceField(Poem))
     """
