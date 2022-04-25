@@ -1,7 +1,17 @@
 from graphene import (Schema, ObjectType)
-from .user_schema import Query as UserQuery, Mutation as UserMutation
+from graphene_mongo import MongoengineConnectionField
+from .user_schema import User, Query as UserQuery, Mutation as UserMutation
 from .public_schema import Poem
 from ..utilities import MongoengineCreateMutation, MongoengineUpdateMutation, MongoengineDeleteMutation
+from ..models import Role
+from .. import schema_loader
+
+"""
+Query Objects
+"""
+
+class Query(UserQuery, ObjectType):
+    users = MongoengineConnectionField(User)
 
 """
 Mutations
@@ -28,4 +38,5 @@ class Mutation(UserMutation, ObjectType):
 Schema
 """
 
-schema = Schema(query=UserQuery, mutation=Mutation)
+schema = Schema(query=Query, mutation=Mutation)
+schema_loader.use_for_role(Role.ADMIN, schema)

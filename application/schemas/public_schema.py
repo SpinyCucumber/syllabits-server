@@ -13,6 +13,7 @@ from ..models import (
     Progress as ProgressModel,
     ProgressLine as ProgressLineModel,
 )
+from .. import schema_loader
 from ..extensions import bcrypt
 from ..utilities import CountableConnection, find_conflicts, decode_location, encode_location
 from ..exceptions import InsufficientPrivilegeError
@@ -321,3 +322,4 @@ Schema
 """
 
 schema = Schema(query=Query, mutation=Mutation)
+schema_loader.use_public(schema)

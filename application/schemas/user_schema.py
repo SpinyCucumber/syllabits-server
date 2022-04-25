@@ -1,14 +1,17 @@
 from graphene_mongo import MongoengineObjectType
-from graphene import (Node, GlobalID, Schema, Mutation, ObjectType, InputObjectType, Boolean, Field)
+from graphene import (Node, GlobalID, Schema, Mutation, ObjectType, InputObjectType, Boolean, Field, Enum)
 from datetime import datetime
 from flask_jwt_extended import get_jwt
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
-from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
+from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel, Role as RoleModel
+from .. import schema_loader
 
 """
 Queries/Object Types
 """
+
+Role = Enum.from_enum(RoleModel)
 
 class User(MongoengineObjectType):
     class Meta:
@@ -16,6 +19,7 @@ class User(MongoengineObjectType):
         interfaces = (Node,)
         # Definitely don't want to expose this
         exclude_fields = ('password_hashed', 'role')
+    role = Field(Role)
 
 class Query(PublicQuery, ObjectType):
     # Reference to the current user
@@ -67,3 +71,4 @@ Schema
 """
 
 schema = Schema(query=Query, mutation=Mutation)
+schema_loader.use_for_role(None, schema)
