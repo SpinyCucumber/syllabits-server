@@ -6,5 +6,9 @@
 - If you reload a document with a reference containing a value that hasn't actually been saved, it is replaced with a DBRef.
 - The 'with_id' method can be used to retrieve a document with a specific primary key.
 
-## Fundamental Problem ##
-- Considering adding a category to a poem. If it already exists, we must first retrieve the poem to update the reference count correctly. However, there is no convenient way of knowing whether the document already exists. (except perhaps reload?)
+## Database Migrations ##
+- For migrating from the early permissions sysytem ('is_admin') to the newer, role-based system:
+    1. You can delete all 'is_admin' fields using the command
+
+        db.user.update({}, {$unset: {is_admin:1}}, false, true)
+    
