@@ -6,6 +6,12 @@ class Role(str, Enum):
     Each role owns a set of permissions, which is accessed using the 'perms' property.
     Roles can inherit permissions from other roles which allows for a role hierarchy.
     An individual permission can be tested for using the 'has_perm' method.
+
+    It's important to note that permissions aren't the ONLY way that SyllaBits handles authorization.
+    Since SyllaBits executes queries against a GraphQL schema, we can choose which schema to use
+    based on the user's role. This logic is handled my the 'schema_loader' module.
+    Having separate schemas for each role makes the code cleaner!
+    Right now, permissions are used for more fine-grained control.
     """
     # I chose to implement roles using an enum rather than something more class-based so that it
     # can be used directly as a Mongoengine field.
