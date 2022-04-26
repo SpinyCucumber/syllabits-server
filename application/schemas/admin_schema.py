@@ -1,8 +1,7 @@
 from graphene import (Schema, ObjectType)
 from graphene_mongo import MongoengineConnectionField
-from .user_schema import User, Query as UserQuery, Mutation as UserMutation
-from .public_schema import Poem
-from ..utilities import MongoengineCreateMutation, MongoengineUpdateMutation, MongoengineDeleteMutation
+from .editor_schema import Query as EditorQuery, Mutation as EditorMutation
+from .user_schema import User
 from ..roles import Role
 from .. import schema_loader
 
@@ -10,29 +9,16 @@ from .. import schema_loader
 Query Objects
 """
 
-class Query(UserQuery, ObjectType):
+class Query(EditorQuery, ObjectType):
+    # Administrators can view all users
     users = MongoengineConnectionField(User)
 
 """
 Mutations
 """
 
-class CreatePoem(MongoengineCreateMutation):
-    class Meta:
-        type = Poem
-
-class UpdatePoem(MongoengineUpdateMutation):
-    class Meta:
-        type = Poem
-
-class DeletePoem(MongoengineDeleteMutation):
-    class Meta:
-        type = Poem
-
-class Mutation(UserMutation, ObjectType):
-    create_poem = CreatePoem.Field()
-    update_poem = UpdatePoem.Field()
-    delete_poem = DeletePoem.Field()
+class Mutation(EditorMutation, ObjectType):
+    pass
 
 """
 Schema
