@@ -3,7 +3,8 @@ from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     set_refresh_cookies,
-    verify_jwt_in_request
+    verify_jwt_in_request,
+    get_jwt,
 )
 from flask_jwt_extended.exceptions import RevokedTokenError, UserLookupError
 from flask_graphql import GraphQLView
@@ -35,6 +36,12 @@ class Context:
         Generates new access token for the current user
         """
         return create_access_token(self.user)
+    
+    def get_jwt(self):
+        """
+        Returns the JWT used to make the current request
+        """
+        return get_jwt()
 
 graphql = GraphQLView(graphiql=app.config["ENABLE_GRAPHIQL"])
 

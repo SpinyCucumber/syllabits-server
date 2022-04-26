@@ -1,7 +1,6 @@
 from graphene_mongo import MongoengineObjectType
 from graphene import (Node, GlobalID, Schema, Mutation, ObjectType, InputObjectType, Boolean, Field, Enum)
 from datetime import datetime
-from flask_jwt_extended import get_jwt
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
 from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
@@ -58,7 +57,7 @@ class Logout(Mutation):
         # Construct a token block
         # We use the jti of the token to uniquely identify it
         # We also attach the expiration time so we can purge the document
-        jwt = get_jwt()
+        jwt = info.context.get_jwt()
         block = TokenBlocklistModel(jti=jwt['jti'], expires=datetime.fromtimestamp(jwt['exp']))
         block.save()
         return Logout(ok=True)
