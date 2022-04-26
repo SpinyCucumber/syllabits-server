@@ -14,7 +14,7 @@ from mongoengine.fields import (
     MapField,
     EnumField,
 )
-from enum import Enum
+from .roles import Role
 from .utilities import signals, operators
 
 class Category(Document):
@@ -108,15 +108,11 @@ def poem_pre_update(sender, document, operator, receiver, args):
     elif operator == operators.remove and receiver == document.categories:
         Category.objects(pk=args['value']).update_one(dec__ref_count=1)
 
-class Role(Enum):
-    EDITOR = 'e'
-    ADMIN = 'a'
-
 class User(Document):
     meta = {'collection': 'user', 'indexes': ['email']}
     email = EmailField(unique=True)
     password_hashed = StringField(required=True)
-    role = EnumField(Role, required=False)
+    role = EnumField(Role, default=Role.USER)
     saved = ListField(ReferenceField(Poem))
     """
     A user can 'save' poems. This is a simple, general-purpose feature which allows
