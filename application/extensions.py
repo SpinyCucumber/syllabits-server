@@ -21,8 +21,7 @@ def user_lookup_callback(jwt_header, jwt_data):
 
 @jwt.additional_claims_loader
 def additional_claims_callback(user):
-    # TODO Attach role
-    return { 'email': user.email }
+    return { 'email': user.email, 'role': user.role.name }
 
 # Set up blocked token checker
 # If a block exists for the jti of the jwt, we block it
