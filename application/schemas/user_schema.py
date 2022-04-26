@@ -4,7 +4,8 @@ from datetime import datetime
 from flask_jwt_extended import get_jwt
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
-from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel, Role as RoleModel
+from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
+from ..roles import Role as RoleModel
 from .. import schema_loader
 
 """
@@ -71,4 +72,4 @@ Schema
 """
 
 schema = Schema(query=Query, mutation=Mutation)
-schema_loader.use_for_role(None, schema)
+schema_loader.use_for_role(RoleModel.USER, schema)

@@ -3,7 +3,7 @@ from graphene_mongo import MongoengineConnectionField
 from .user_schema import User, Query as UserQuery, Mutation as UserMutation
 from .public_schema import Poem
 from ..utilities import MongoengineCreateMutation, MongoengineUpdateMutation, MongoengineDeleteMutation
-from ..models import Role
+from ..roles import Role
 from .. import schema_loader
 
 """
