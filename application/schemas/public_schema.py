@@ -16,7 +16,6 @@ from ..models import (
 from .. import schema_loader
 from ..extensions import bcrypt
 from ..utilities import CountableConnection, find_conflicts, decode_location, encode_location
-from ..exceptions import InsufficientPrivilegeError
 
 """
 Types/Queries
@@ -51,11 +50,9 @@ class PoemLine(MongoengineObjectType):
         # See https://github.com/graphql-python/graphene-mongo/issues/162
         # interfaces = (Node,)
     num_feet = Int()
-    # To read the key, users must have admin status
     def resolve_key(parent, info):
-        if getattr(info.context.user, 'is_admin', None):
-            return parent.key
-        raise InsufficientPrivilegeError('Not authorized')
+        info.context.assert_has_perm('poem.key.read')
+        return parent.key
     # Also expose number of feet so client knows how many slots to render
     def resolve_num_feet(parent, info):
         return len(parent.key)
@@ -82,16 +79,14 @@ class Poem(MongoengineObjectType):
     # Only attach progress if a user is present
     def resolve_progress(parent, info):
         # Look up progress using poem and user
-        user = info.context.user
-        if (user):
-            return ProgressModel.objects(user=user, poem=parent).first()
+        if info.context.has_perm('poem.progress.read'):
+            return ProgressModel.objects(user=info.context.user, poem=parent).first()
 
     # The location last used to access a poem
     # Only resolve if user is present
     def resolve_location(parent, info):
-        user = info.context.user
-        if (user):
-            return user.locations.get(str(parent.id))
+        if info.context.has_perm('poem.location.read'):
+            return info.context.user.locations.get(str(parent.id))
 
 class Collection(MongoengineObjectType):
     class Meta:
@@ -186,10 +181,9 @@ class PlayPoem(Mutation):
                 next['i'] += 1
                 next = encode_location(next)
         # If user is logged in, update 'last played location'
-        user = info.context.user
-        if (user):
+        if info.context.has_perm('poem.location.update'):
             update_clause = {'$set': {f'locations.{str(poem.id)}': location}}
-            user.modify(__raw__=update_clause)
+            info.context.user.modify(__raw__=update_clause)
         # Package result
         return PlayPoem(ok=True, poem=poem, next=next, previous=previous)
 
@@ -216,9 +210,9 @@ class SubmitLine(Mutation):
             correct = (len(conflicts) == 0)
         else:
             correct = False
-        # If the user is logged in, update their progress
-        user = info.context.user
-        if (user):
+        # Update progress if applicable
+        if info.context.has_perm('poem.progress.update'):
+            user = info.context.user
             progress_query = ProgressModel.objects(user=user, poem=poem)
             # Construct update clause and upsert progress (insert or update)
             update_clause = {'$set': {f'lines.{input.lineID}': {'answer': input.answer, 'correct': correct}}}

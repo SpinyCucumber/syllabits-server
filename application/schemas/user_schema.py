@@ -25,7 +25,7 @@ class Query(PublicQuery, ObjectType):
     # Reference to the current user
     # This allows the current user to query their own saved poems/etc, but not others
     me = Field(User)
-    def resolve_me(root, info):
+    def resolve_me(parent, info):
         return info.context.user
 
 """
@@ -39,7 +39,7 @@ class ResetProgress(Mutation):
     class Arguments:
         input = ResetProgressInput(required=True)
     ok = Boolean()
-    def mutate(root, info, input):
+    def mutate(parent, info, input):
         # Lookup poem and user
         poem = Node.get_node_from_global_id(info, input.poemID)
         user = info.context.user
@@ -51,7 +51,7 @@ class ResetProgress(Mutation):
 
 class Logout(Mutation):
     ok = Boolean()
-    def mutate(root, info):
+    def mutate(parent, info):
         # Switch to a refresh token context
         info.context.verify_identity(refresh=True)
         # Construct a token block

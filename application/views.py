@@ -10,6 +10,7 @@ from flask_jwt_extended.exceptions import RevokedTokenError, UserLookupError
 from flask_graphql import GraphQLView
 from jwt.exceptions import InvalidTokenError
 from flask import current_app as app
+from .exceptions import InsufficientPrivilegeError
 from . import schema_loader
 
 class Context:
@@ -42,6 +43,24 @@ class Context:
         Returns the JWT used to make the current request
         """
         return get_jwt()
+    
+    def has_perm(self, perm):
+        """
+        Whether the current user has a permission
+        The request does not have to have a user. If there is no user,
+        this method will always return false.
+        """
+        if not self.user:
+            return False
+        return self.user.role.has_perm(perm)
+    
+    def assert_has_perm(self, perm):
+        """
+        Asserts that the current user has a permission
+        If not, an InsufficientPrivilegeError is raised.
+        """
+        if not self.has_perm(perm):
+            raise InsufficientPrivilegeError()
 
 graphql = GraphQLView(graphiql=app.config["ENABLE_GRAPHIQL"])
 

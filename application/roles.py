@@ -32,6 +32,24 @@ class Role(str, Enum):
     def has_perm(self, perm):
         return (perm in self.perms)
     
-    USER = ('u', {'has': ['basic1', 'basic2']})
-    EDITOR = ('e', {'has': ['secret1'], 'inherits': ['USER']})
-    ADMIN = ('a', {'has': ['super_secret1'], 'inherits': ['EDITOR']})
+    USER = ('u',
+        {
+            'has': [
+                'poem.progress.read',
+                'poem.progress.update',
+                'poem.location.read',
+                'poem.location.update'
+            ]
+        })
+    
+    EDITOR = ('e',
+        {
+            'has': ['poem.key.read'],
+            'inherits': ['USER']
+        })
+    
+    ADMIN = ('a',
+        {
+            'inherits': ['EDITOR']
+        })
+    
