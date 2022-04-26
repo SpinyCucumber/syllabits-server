@@ -255,7 +255,7 @@ class Login(Mutation):
                 # Update context with new user and request a refresh token
                 # to be attached to the response
                 info.context.user = user
-                info.context.request_refresh()
+                info.context.attach_refresh_token = True
                 token = info.context.create_access_token()
                 return Login(ok=True, result=token)
             else:
@@ -287,7 +287,7 @@ class Register(Mutation):
             # Update context with new user and request a refresh token
             # to be attached to the response
             info.context.user = user
-            info.context.request_refresh()
+            info.context.attach_refresh_token = True
             token = info.context.create_access_token()
             return Register(ok=True, result=token)
         except mongoengine.errors.NotUniqueError:

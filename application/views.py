@@ -18,7 +18,7 @@ class Context:
     """
 
     user = None
-    refresh_requested = False
+    attach_refresh_token = False
     
     def verify_identity(self, refresh=False):
         locations = 'cookies' if refresh else None
@@ -35,12 +35,6 @@ class Context:
         Generates new access token for the current user
         """
         return create_access_token(self.user)
-    
-    def request_refresh(self):
-        """
-        Requests a refresh token to be attached to the response
-        """
-        self.refresh_requested = True
 
 graphql = GraphQLView(graphiql=app.config["ENABLE_GRAPHIQL"])
 
@@ -54,7 +48,7 @@ def handle_request():
     response = graphql.dispatch_request(schema=schema, context=context)
     # If a refresh token was requested, create a refresh token
     # for the current user and attach it as a cookie
-    if (context.refresh_requested):
+    if (context.attach_refresh_token):
         token = create_refresh_token(context.user)
         set_refresh_cookies(response, token)
     return response
