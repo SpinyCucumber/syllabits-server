@@ -109,7 +109,14 @@ def poem_pre_update(sender, document, operator, receiver, args):
         Category.objects(pk=args['value']).update_one(dec__ref_count=1)
 
 class User(Document):
-    meta = {'collection': 'user', 'indexes': ['email']}
+    meta = {'collection': 'user', 'indexes': [
+        'email',
+        {
+            'fields': ['$email'],
+            'default_language': 'english',
+            'weights': {'email': 1}
+        }
+    ]}
     email = EmailField(unique=True)
     password_hashed = StringField(required=True)
     role = EnumField(Role, default=Role.USER)

@@ -3,6 +3,7 @@ from graphene import (Node, GlobalID, Schema, Mutation, ObjectType, InputObjectT
 from datetime import datetime
 
 from .public_schema import Query as PublicQuery, Mutation as PublicMutation
+from ..utilities import CountableConnection
 from ..models import Progress as ProgressModel, User as UserModel, TokenBlocklist as TokenBlocklistModel
 from ..roles import Role as RoleModel
 from .. import schema_loader
@@ -19,6 +20,8 @@ class User(MongoengineObjectType):
         interfaces = (Node,)
         # Definitely don't want to expose this
         exclude_fields = ('password_hashed', 'role')
+        connection_class = CountableConnection
+        searchable = True
     role = Field(Role)
 
 class Query(PublicQuery, ObjectType):
