@@ -1,5 +1,6 @@
 from graphene import (Schema, ObjectType)
 from graphene_mongo import MongoengineConnectionField
+from .public_schema import Poem
 from .editor_schema import Query as EditorQuery, Mutation as EditorMutation
 from .user_schema import User
 from ..utilities import MongoengineUpdateMutation, MongoengineDeleteMutation
@@ -28,9 +29,14 @@ class DeleteUser(MongoengineDeleteMutation):
     class Meta:
         type = User
 
+class DeletePoem(MongoengineDeleteMutation):
+    class Meta:
+        type = Poem
+
 class Mutation(EditorMutation, ObjectType):
     update_user = UpdateUser.Field()
     delete_user = DeleteUser.Field()
+    delete_poem = DeletePoem.Field()
 
 """
 Schema
