@@ -1,3 +1,4 @@
+from pyexpat import model
 from graphene_mongo import MongoengineObjectType
 from graphene import (Node, GlobalID, ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, Boolean)
 from graphene_mongo import MongoengineConnectionField
@@ -12,6 +13,7 @@ from ..models import (
     User as UserModel,
     Progress as ProgressModel,
     ProgressLine as ProgressLineModel,
+    Page as PageModel,
 )
 from .. import schema_loader
 from ..extensions import bcrypt
@@ -95,11 +97,21 @@ class Collection(MongoengineObjectType):
         connection_class = CountableConnection
         searchable = True
 
+class Page(MongoengineObjectType):
+    class Meta:
+        model = PageModel
+        interfaces = (Node,)
+
 class Query(ObjectType):
     node = Node.Field()
     collections = MongoengineConnectionField(Collection)
     poems = MongoengineConnectionField(Poem)
     categories = MongoengineConnectionField(Category)
+    pages = MongoengineConnectionField(Page)
+    page = Field(Page, path=String(required=True))
+
+    def resolve_page(parent, info, path):
+        return PageModel.objects(path=path).first()
 
 """
 Mutations

@@ -1,9 +1,9 @@
 from graphene import (Schema, ObjectType)
 from graphene_mongo import MongoengineConnectionField
-from .public_schema import Poem
+from .public_schema import Poem, Page
 from .editor_schema import Query as EditorQuery, Mutation as EditorMutation
 from .user_schema import User
-from ..utilities import MongoengineUpdateMutation, MongoengineDeleteMutation
+from ..utilities import MongoengineUpdateMutation, MongoengineDeleteMutation, MongoengineCreateMutation
 from ..roles import Role
 from .. import schema_loader
 
@@ -29,14 +29,33 @@ class DeleteUser(MongoengineDeleteMutation):
     class Meta:
         type = User
 
+# Administrators can delete poems
+
 class DeletePoem(MongoengineDeleteMutation):
     class Meta:
         type = Poem
+
+# Administrators can create, update and delete pages
+
+class CreatePage(MongoengineCreateMutation):
+    class Meta:
+        type = Page
+
+class UpdatePage(MongoengineUpdateMutation):
+    class Meta:
+        type = Page
+
+class DeletePage(MongoengineDeleteMutation):
+    class Meta:
+        type = Page
 
 class Mutation(EditorMutation, ObjectType):
     update_user = UpdateUser.Field()
     delete_user = DeleteUser.Field()
     delete_poem = DeletePoem.Field()
+    create_page = CreatePage.Field()
+    update_page = UpdatePage.Field()
+    delete_page = DeletePage.Field()
 
 """
 Schema

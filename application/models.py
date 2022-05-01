@@ -163,6 +163,17 @@ class Progress(Document):
     lines = MapField(EmbeddedDocumentField(ProgressLine), required=True)
     num_correct = IntField()
 
+class Page(Document):
+    """
+    A static page visible to all users
+    Pages can be used to display information such as guides, credits, FAQs, etc.
+    Pages can only be edited by admins.
+    """
+    meta = {'collection': 'page', 'indexes': ['path']}
+    path = StringField(unique=True)
+    name = StringField(required=True)
+    content = StringField()
+
 class TokenBlocklist(Document):
     """
     Used to track invalidated tokens
