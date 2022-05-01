@@ -146,6 +146,12 @@ class User(Document):
     A map of poems to locations which were most recently used to access the poem
     """
 
+@signals.pre_delete.connect_via(User)
+def user_pre_delete(sender, document):
+    # Mongoengine supposedly has support for cascading deletes,
+    # but I've found (from experience) that it's always better to be explicit with Mongoengine...
+    Progress.objects(user=document).delete()
+
 class ProgressLine(EmbeddedDocument):
     answer = ListField(StringField(max_length=1), required=True)
     correct = BooleanField(required=True)
