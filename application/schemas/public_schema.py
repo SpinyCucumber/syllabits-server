@@ -1,4 +1,3 @@
-from pyexpat import model
 from graphene_mongo import MongoengineObjectType
 from graphene import (Node, GlobalID, ObjectType, Mutation, Schema, Field, InputObjectType, Int, String, List, Enum, Boolean)
 from graphene_mongo import MongoengineConnectionField
@@ -111,7 +110,8 @@ class Query(ObjectType):
     page = Field(Page, path=String(required=True))
 
     def resolve_page(parent, info, path):
-        return PageModel.objects(path=path).first()
+        # Attempt to look up using the page path first. If path lookup fails, treat as ID.
+        return PageModel.objects(path=path).first() or Node.get_node_from_global_id(info, path, only_type=Page)
 
 """
 Mutations
