@@ -14,6 +14,7 @@ Query Objects
 class Query(EditorQuery, ObjectType):
     # Administrators can view all users
     users = MongoengineConnectionField(User)
+    pages = MongoengineConnectionField(Page)
 
 """
 Mutations

@@ -171,6 +171,13 @@ class Page(Document):
     """
     meta = {'collection': 'page', 'indexes': ['path']}
     path = StringField(unique=True)
+    """
+    An alternative to IDs for uniquely identifying a page. Should be a short, memorable string.
+    """
+    public = BooleanField(default=False)
+    """
+    Whether the page should be accessible to all users via the Navbar
+    """
     name = StringField(required=True)
     content = StringField()
 

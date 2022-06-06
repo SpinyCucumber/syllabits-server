@@ -100,18 +100,23 @@ class Page(MongoengineObjectType):
     class Meta:
         model = PageModel
         interfaces = (Node,)
+        connection_class = CountableConnection
+        searchable = True
 
 class Query(ObjectType):
     node = Node.Field()
     collections = MongoengineConnectionField(Collection)
     poems = MongoengineConnectionField(Poem)
     categories = MongoengineConnectionField(Category)
-    pages = MongoengineConnectionField(Page)
+    public_pages = List(Page)
     page = Field(Page, path=String(required=True))
 
     def resolve_page(parent, info, path):
         # Attempt to look up using the page path first. If path lookup fails, treat as ID.
         return PageModel.objects(path=path).first() or Node.get_node_from_global_id(info, path, only_type=Page)
+    
+    def resolve_public_pages(parent, info):
+        return PageModel.objects(public=True)
 
 """
 Mutations
