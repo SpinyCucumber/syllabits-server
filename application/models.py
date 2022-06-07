@@ -169,7 +169,17 @@ class Page(Document):
     Pages can be used to display information such as guides, credits, FAQs, etc.
     Pages can only be edited by admins.
     """
-    meta = {'collection': 'page', 'indexes': ['path']}
+    meta = {
+        'collection': 'page',
+        'indexes': [
+            'path',
+            {
+                'fields': ['$name', '$path'],
+                'default_language': 'english',
+                'weights': {'name': 10, 'path': 10,}
+            }
+        ]
+    }
     path = StringField(unique=True)
     """
     An alternative to IDs for uniquely identifying a page. Should be a short, memorable string.
